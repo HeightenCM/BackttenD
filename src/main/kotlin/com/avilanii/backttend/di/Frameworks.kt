@@ -1,8 +1,7 @@
-package com.attend.com.attend.backttend.di
+package com.avilanii.backttend.di
 
-import com.attend.com.attend.backttend.services.EventService
+import com.avilanii.backttend.services.EventService
 import io.ktor.server.application.*
-import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger

@@ -1,4 +1,4 @@
-package com.attend.com.attend.backttend.presentation.routes
+package com.avilanii.backttend.presentation.routes
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*

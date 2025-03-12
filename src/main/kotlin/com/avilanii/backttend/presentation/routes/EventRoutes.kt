@@ -1,9 +1,8 @@
-package com.attend.com.attend.backttend.presentation.routes
+package com.avilanii.backttend.presentation.routes
 
-import com.attend.com.attend.backttend.services.EventService
+import com.avilanii.backttend.services.EventService
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
 
 fun Route.eventsRoutes() {
     route("/events") {

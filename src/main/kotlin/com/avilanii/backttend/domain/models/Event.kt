@@ -1,4 +1,4 @@
-package com.attend.com.attend.backttend.domain.models
+package com.avilanii.backttend.domain.models
 
 import java.time.LocalDateTime
 

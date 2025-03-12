@@ -1,4 +1,4 @@
-package com.attend.com.attend.backttend.services
+package com.avilanii.backttend.services
 
 class EventService {
     fun getAllEvents(): List<String>{

@@ -1,7 +1,7 @@
-package com.attend.com.attend.backttend.infrastructure.repo
+package com.avilanii.backttend.infrastructure.repo
 
-import com.attend.com.attend.backttend.domain.models.Event
-import com.attend.com.attend.backttend.domain.repo.EventRepository
+import com.avilanii.backttend.domain.models.Event
+import com.avilanii.backttend.domain.repo.EventRepository
 
 class EventRepositoryImpl: EventRepository {
     override suspend fun getAllEvents(): List<Event> {
