@@ -3,14 +3,17 @@ package com.avilanii.backttend.infrastructure.repo
 import com.avilanii.backttend.domain.models.Event
 import com.avilanii.backttend.domain.repo.EventRepository
 import com.avilanii.backttend.infrastructure.database.EventTable
+import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class EventRepositoryImpl: EventRepository {
+class EventRepositoryImpl(
+    private val database: Database,
+): EventRepository {
     override suspend fun getAllEvents(): List<Event> =
-        transaction {
+        transaction (database) {
             EventTable.selectAll().map {
                 Event(
                     id = it[EventTable.id].value,
@@ -22,7 +25,7 @@ class EventRepositoryImpl: EventRepository {
         }
 
     override suspend fun getEvent(id: Int): Event? =
-        transaction {
+        transaction (database) {
             EventTable.select(EventTable.id.eq(id)).map { result->
                 Event(
                     id = result[EventTable.id].value,
@@ -34,7 +37,7 @@ class EventRepositoryImpl: EventRepository {
         }
 
     override suspend fun addEvent(event: Event): Event? =
-        transaction {
+        transaction (database){
             val createdEventId = EventTable.insertAndGetId {
                 it[EventTable.name] = event.name
                 it[EventTable.budget] = event.budget

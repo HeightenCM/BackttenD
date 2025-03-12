@@ -19,7 +19,7 @@ fun Application.module() {
     configureSecurity()
     configureMonitoring()
     configureSerialization()
-    configureDatabase()
     configureFrameworks()
+    configureDatabase()
     configureRouting()
 }
