@@ -1,10 +1,11 @@
 package com.avilanii.backttend.domain.models
 
-import java.time.LocalDateTime
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Event(
-    val id: Int,
+    val id: Int? = null,
     val name: String,
     val budget: Int,
-    val dateTime: LocalDateTime
+    val dateTime: String
 )

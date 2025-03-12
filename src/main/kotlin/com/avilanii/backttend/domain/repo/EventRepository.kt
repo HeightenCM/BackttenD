@@ -5,5 +5,5 @@ import com.avilanii.backttend.domain.models.Event
 interface EventRepository {
     suspend fun getAllEvents(): List<Event>
     suspend fun getEvent(id: Int): Event?
-    suspend fun addEvent(event: Event): Boolean
+    suspend fun addEvent(event: Event): Event?
 }
