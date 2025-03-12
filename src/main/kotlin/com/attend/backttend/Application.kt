@@ -1,7 +1,11 @@
-package com.attend
+package com.attend.com.attend.backttend
 
 import com.attend.com.attend.backttend.di.configureFrameworks
 import com.attend.com.attend.backttend.presentation.routes.configureRouting
+import com.attend.configureDatabases
+import com.attend.com.attend.backttend.plugins.configureMonitoring
+import com.attend.com.attend.backttend.plugins.configureSecurity
+import com.attend.com.attend.backttend.plugins.configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*

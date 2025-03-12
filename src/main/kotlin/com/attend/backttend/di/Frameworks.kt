@@ -1,6 +1,5 @@
 package com.attend.com.attend.backttend.di
 
-import com.attend.HelloService
 import com.attend.com.attend.backttend.services.EventService
 import io.ktor.server.application.*
 import org.koin.core.module.dsl.singleOf
@@ -12,7 +11,7 @@ fun Application.configureFrameworks() {
     install(Koin) {
         slf4jLogger()
         modules(module {
-            singleOf(::EventService)
+            single<EventService> { EventService() }
         })
     }
 }
