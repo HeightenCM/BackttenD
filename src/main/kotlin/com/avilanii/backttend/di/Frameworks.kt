@@ -1,6 +1,5 @@
 package com.avilanii.backttend.di
 
-import com.avilanii.backttend.infrastructure.database.configureDatabase
 import com.avilanii.backttend.infrastructure.repo.EventRepositoryImpl
 import com.avilanii.backttend.services.EventService
 import io.ktor.server.application.*
@@ -14,7 +13,7 @@ fun Application.configureFrameworks() {
         slf4jLogger()
         modules(module {
             single {
-                Database.connect("jdbc:sqlite:database.db", "org.sqlite.JDBC")
+                Database.connect("jdbc:sqlite:src/main/resources/database.db", "org.sqlite.JDBC")
             }
             single {
                 EventRepositoryImpl(get())
