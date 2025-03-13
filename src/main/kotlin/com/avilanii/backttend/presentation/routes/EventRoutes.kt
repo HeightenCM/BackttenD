@@ -1,6 +1,7 @@
 package com.avilanii.backttend.presentation.routes
 
 import com.avilanii.backttend.domain.models.Event
+import com.avilanii.backttend.infrastructure.datatransferobjects.toEventsResponseDTO
 import com.avilanii.backttend.services.EventService
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -15,7 +16,7 @@ fun Route.eventsRoutes(
             val events = eventService.getAllEvents()
             if (events.isEmpty())
                 call.respond(HttpStatusCode.NoContent, "No events found")
-            call.respond(HttpStatusCode.OK, events)
+            call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
         }
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
