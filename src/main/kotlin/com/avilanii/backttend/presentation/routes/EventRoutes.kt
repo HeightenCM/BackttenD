@@ -31,10 +31,11 @@ fun Route.eventsRoutes(
         }
         post{
             val event = call.receive<Event>()
-            val createdEvent = eventService.addEvent(event)
-            if (createdEvent != null)
-                call.respond(HttpStatusCode.Created, createdEvent)
-            else
+            val createdEventId = eventService.addEvent(event)
+            if (createdEventId != null) {
+                val createdEvent = eventService.getEventById(createdEventId)
+                call.respond(HttpStatusCode.OK, createdEvent!!)
+            } else
                 call.respond(HttpStatusCode.NoContent, "Invalid event")
         }
     }

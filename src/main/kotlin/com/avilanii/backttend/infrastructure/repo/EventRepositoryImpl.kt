@@ -26,7 +26,7 @@ class EventRepositoryImpl(
 
     override suspend fun getEvent(id: Int): Event? =
         transaction (database) {
-            EventTable.select(EventTable.id.eq(id)).map { result->
+            EventTable.selectAll().where(EventTable.id.eq(id)).map { result->
                 Event(
                     id = result[EventTable.id].value,
                     name = result[EventTable.name],
@@ -36,20 +36,12 @@ class EventRepositoryImpl(
             }.singleOrNull()
         }
 
-    override suspend fun addEvent(event: Event): Event? =
+    override suspend fun addEvent(event: Event): Int? =
         transaction (database){
-            val createdEventId = EventTable.insertAndGetId {
+            EventTable.insertAndGetId {
                 it[EventTable.name] = event.name
                 it[EventTable.budget] = event.budget
                 it[EventTable.dateTime] =event.dateTime
             }.value
-            EventTable.select(EventTable.id.eq(createdEventId)).map { result->
-                Event(
-                    id = result[EventTable.id].value,
-                    name = result[EventTable.name],
-                    budget = result[EventTable.budget],
-                    dateTime = result[EventTable.dateTime]
-                )
-            }.singleOrNull()
         }
 }
