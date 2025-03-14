@@ -7,11 +7,12 @@ import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.koin.ktor.ext.inject
 
 fun Application.configureDatabase() {
-    println("Running database reset...")
+    println("Configuring database...")
     val db by inject<Database>()
     db.apply {
         transaction {
             create(EventTable)
+            create(ParticipantTable)
         }
     }
 }

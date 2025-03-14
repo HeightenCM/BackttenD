@@ -14,30 +14,19 @@ fun Route.eventsRoutes(
     route("/events") {
         get {
             val events = eventService.getAllEvents()
-            if (events.isEmpty())
-                call.respond(HttpStatusCode.NoContent, "No events found")
             call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
         }
+
         get("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull()
-            if (id == null) {
-                call.respond(HttpStatusCode.NoContent, "Invalid id")
-            }
-            val event = eventService.getEventById(id!!)
-            if (event == null) {
-                call.respond(HttpStatusCode.NoContent, "Event with ID $id not found")
-            } else{
-                call.respond(HttpStatusCode.OK, event)
-            }
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+            val event = eventService.getEventById(id) ?: return@get call.respondText("Event not found", status = HttpStatusCode.NotFound)
+            call.respond(HttpStatusCode.OK, event)
         }
-        post{
-            val event = call.receive<Event>()
-            val createdEventId = eventService.addEvent(event)
-            if (createdEventId != null) {
-                val createdEvent = eventService.getEventById(createdEventId)
-                call.respond(HttpStatusCode.OK, createdEvent!!)
-            } else
-                call.respond(HttpStatusCode.NoContent, "Invalid event")
+
+        post<Event>{ event->
+            val createdEventId = eventService.addEvent(event) ?: return@post call.respondText("Couldn't create event", status = HttpStatusCode.BadRequest)
+            val createdEvent = eventService.getEventById(createdEventId) ?: return@post call.respondText("Event not found", status = HttpStatusCode.NotFound)
+            call.respond(HttpStatusCode.OK, createdEvent)
         }
     }
 }

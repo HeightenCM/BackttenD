@@ -1,7 +1,9 @@
 package com.avilanii.backttend.di
 
 import com.avilanii.backttend.infrastructure.repo.EventRepositoryImpl
+import com.avilanii.backttend.infrastructure.repo.ParticipantRepositoryImpl
 import com.avilanii.backttend.services.EventService
+import com.avilanii.backttend.services.ParticipantService
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
 import org.koin.dsl.module
@@ -20,6 +22,12 @@ fun Application.configureFrameworks() {
             }
             single {
                 EventService(get())
+            }
+            single {
+                ParticipantRepositoryImpl(get())
+            }
+            single {
+                ParticipantService(get())
             }
         })
     }
