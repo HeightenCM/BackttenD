@@ -19,21 +19,9 @@ class UserRepositoryImpl(
             }.value
         }
 
-    override suspend fun findByEmailAndPassword(email: String, password: String): User? =
-        transaction(database){
-            UserTable.selectAll().where(UserTable.email.eq(email)).where(UserTable.passwordHash.eq(password)).map { result ->
-                User(
-                    id = result[UserTable.id].value,
-                    name = result[UserTable.name],
-                    email = result[UserTable.email],
-                    password = result[UserTable.passwordHash]
-                )
-            }.singleOrNull()
-        }
-
     override suspend fun deleteUser(user: User): Boolean =
         transaction(database){
-            UserTable.deleteWhere(1){UserTable.id.eq(user.id)}==1
+            UserTable.deleteWhere(1){ id.eq(user.id)}==1
         }
 
     override suspend fun updateUser(user: User): Boolean =
@@ -43,5 +31,17 @@ class UserRepositoryImpl(
                 it[email]= user.email
                 it[passwordHash]= user.password
             } == 1
+        }
+
+    override suspend fun findByEmail(email: String): User? =
+        transaction(database){
+            UserTable.selectAll().where(UserTable.email.eq(email)).map { result ->
+                User(
+                    id = result[UserTable.id].value,
+                    name = result[UserTable.name],
+                    email = result[UserTable.email],
+                    password = result[UserTable.passwordHash]
+                )
+            }.singleOrNull()
         }
 }

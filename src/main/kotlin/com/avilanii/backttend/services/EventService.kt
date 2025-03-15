@@ -6,8 +6,8 @@ import com.avilanii.backttend.infrastructure.repo.EventRepositoryImpl
 class EventService(
     private val eventRepository: EventRepositoryImpl,
 ) {
-    suspend fun getAllEvents(): List<Event>{
-        return eventRepository.getAllEvents()
+    suspend fun getAllEvents(userId: Int): List<Event>{
+        return eventRepository.getAllEvents(userId)
     }
 
     suspend fun addEvent(event: Event): Int? {
