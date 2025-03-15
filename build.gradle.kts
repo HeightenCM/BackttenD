@@ -16,7 +16,7 @@ group = "com.attend"
 version = "0.0.1"
 
 application {
-    mainClass = "com.attend.ApplicationKt"
+    mainClass = "com.avilanii.backttend.ApplicationKt"
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")

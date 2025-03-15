@@ -13,6 +13,8 @@ fun Application.configureDatabase() {
         transaction {
             create(EventTable)
             create(ParticipantTable)
+            create(QrCodeTable)
+            create(UserTable)
         }
     }
 }
