@@ -10,11 +10,11 @@ class EventService(
         return eventRepository.getAllEvents(userId)
     }
 
-    suspend fun addEvent(event: Event): Int? {
+    suspend fun addEvent(event: Event): Int {
         return eventRepository.addEvent(event)
     }
 
-    suspend fun getEventById(id: Int): Event? {
-        return eventRepository.getEvent(id)
+    suspend fun getEventById(userId: Int, eventId: Int): Event? {
+        return eventRepository.getEvent(eventId)
     }
 }

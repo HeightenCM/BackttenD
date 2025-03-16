@@ -5,8 +5,6 @@ import com.avilanii.backttend.domain.models.ParticipantRole
 import com.avilanii.backttend.domain.repo.EventRepository
 import com.avilanii.backttend.infrastructure.database.EventTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
-import com.avilanii.backttend.infrastructure.database.ParticipantTable.role
-import com.avilanii.backttend.infrastructure.database.UserTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
@@ -33,13 +31,11 @@ class EventRepositoryImpl(
                 }
         }
 
-    override suspend fun getEvent(userId: Int, eventId: Int): Event? =
+    override suspend fun getEvent(eventId: Int): Event? =
         transaction (database) {
-            EventTable.innerJoin(ParticipantTable)
+            EventTable
                 .selectAll()
-                .where(ParticipantTable.userId.eq(userId))
-                .andWhere { ParticipantTable.role.eq(ParticipantRole.ORGANIZER) }
-                .andWhere { ParticipantTable.eventId.eq(eventId) }
+                .where(EventTable.id.eq(eventId))
                 .map { result->
                     Event(
                         id = result[EventTable.id].value,
@@ -50,7 +46,7 @@ class EventRepositoryImpl(
                 }.singleOrNull()
         }
 
-    override suspend fun addEvent(event: Event): Int? =
+    override suspend fun addEvent(event: Event): Int =
         transaction (database){
             EventTable.insertAndGetId {
                 it[EventTable.name] = event.name
