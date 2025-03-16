@@ -44,4 +44,19 @@ class UserRepositoryImpl(
                 )
             }.singleOrNull()
         }
+
+    override suspend fun findById(id: Int): User? =
+        transaction(database){
+            UserTable
+                .selectAll()
+                .where{UserTable.id eq id}
+                .map { result ->
+                    User(
+                        id = id,
+                        name = result[UserTable.name],
+                        email = result[UserTable.email],
+                        password = result[UserTable.passwordHash]
+                    )
+                }.singleOrNull()
+        }
 }

@@ -18,8 +18,9 @@ fun Route.participantsRoutes(
         }
 
         post<Participant> { participant ->
-            participantService.addParticipant(participant)
-            val addedParticipant = participantService.getParticipant(participant.eventId) ?: return@post call.respondText("Participant not found", status = HttpStatusCode.NotFound)
+            TODO("participant joinDate should be computed server-side, can be null -- change model")
+            val participantId = participantService.addParticipant(participant)
+            val addedParticipant = participantService.getParticipant(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
             call.respond(HttpStatusCode.OK, addedParticipant)
         }
     }

@@ -35,4 +35,8 @@ class UserService(
     suspend fun updateUser(user: User): Boolean{
         return userRepository.updateUser(user)
     }
+
+    suspend fun findById(id: Int): User?{
+        return userRepository.findById(id)
+    }
 }

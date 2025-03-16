@@ -14,7 +14,7 @@ class ParticipantService(
         return participantRepository.getParticipant(id)
     }
 
-    suspend fun addParticipant(participant: Participant): Unit {
+    suspend fun addParticipant(participant: Participant): Int {
         return participantRepository.addParticipant(participant)
     }
 }

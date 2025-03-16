@@ -6,6 +6,7 @@ import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -42,9 +43,9 @@ class ParticipantRepositoryImpl(
             }.singleOrNull()
         }
 
-    override suspend fun addParticipant(participant: Participant): Unit =
+    override suspend fun addParticipant(participant: Participant): Int =
         transaction(database) {
-            ParticipantTable.insert {
+            ParticipantTable.insertAndGetId {
                 it[eventId] = participant.eventId
                 it[userId] = participant.userId
                 it[name] = participant.name
@@ -52,6 +53,6 @@ class ParticipantRepositoryImpl(
                 it[status] = participant.status
                 it[role] = participant.role
                 it[joinDate] = participant.joinDate
-            }
+            }.value
         }
 }
