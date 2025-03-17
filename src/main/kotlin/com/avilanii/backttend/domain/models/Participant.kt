@@ -8,9 +8,9 @@ data class Participant(
     val userId: Int? = null,
     val name: String,
     val email: String,
-    val status: ParticipantStatus,
-    val role: ParticipantRole,
-    val joinDate: String
+    val status: ParticipantStatus = ParticipantStatus.PENDING,
+    val role: ParticipantRole = ParticipantRole.ATTENDEE,
+    val joinDate: String? = null
 )
 
 @Serializable

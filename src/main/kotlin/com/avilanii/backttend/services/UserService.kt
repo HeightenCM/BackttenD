@@ -39,4 +39,8 @@ class UserService(
     suspend fun findById(id: Int): User?{
         return userRepository.findById(id)
     }
+
+    suspend fun findByEmail(email: String): User?{
+        return userRepository.findByEmail(email)
+    }
 }

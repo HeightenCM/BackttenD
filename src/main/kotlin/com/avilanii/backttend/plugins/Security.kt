@@ -7,10 +7,11 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
+import java.util.*
 
 fun Application.configureSecurity() {
     authentication {
-        jwt {
+        jwt ("auth-jwt") {
             realm = JWTConfig.jwtRealm
             verifier(
                 JWT
@@ -36,4 +37,14 @@ private object JWTConfig{
     val jwtDomain = System.getenv("JWT_ISSUER") ?: "https://avilanii.ro/"
     val jwtRealm = System.getenv("JWT_REALM") ?: "backttend"
     val jwtSecret = System.getenv("JWT_SECRET") ?: "supermegagigasecretnotinenv"
+}
+
+fun generateJWT(userID: Int, email: String): String{
+    return JWT.create()
+        .withIssuer(JWTConfig.jwtDomain)
+        .withAudience(JWTConfig.jwtAudience)
+        .withSubject(userID.toString())
+        .withClaim("email", email)
+        //.withExpiresAt(Date(System.currentTimeMillis() + 3600000 * 24)) //maybe expire after 24h?
+        .sign(Algorithm.HMAC256(JWTConfig.jwtSecret))
 }
