@@ -10,8 +10,12 @@ class ParticipantService(
         return participantRepository.getAllParticipants(eventId)
     }
 
-    suspend fun getParticipant(id: Int): Participant? {
-        return participantRepository.getParticipant(id)
+    suspend fun getParticipantByUserId(userId: Int): Participant? {
+        return participantRepository.getParticipantByUserId(userId)
+    }
+
+    suspend fun getParticipantById(id: Int): Participant? {
+        return participantRepository.getParticipantById(id)
     }
 
     suspend fun addParticipant(participant: Participant): Int {

@@ -22,9 +22,8 @@ fun Route.participantsRoutes(
 
             post<Participant> { participant ->
                 val eventId = call.parameters["id"] ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
-                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                val participantId = participantService.addParticipant(participant.copy(userId = userId, eventId = eventId.toInt()))
-                val addedParticipant = participantService.getParticipant(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
+                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt()))
+                val addedParticipant = participantService.getParticipantById(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
                 call.respond(HttpStatusCode.OK, addedParticipant)
             }
         }

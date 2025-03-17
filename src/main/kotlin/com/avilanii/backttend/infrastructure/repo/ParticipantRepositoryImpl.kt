@@ -5,7 +5,6 @@ import com.avilanii.backttend.domain.repo.ParticipantRepository
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,9 +14,9 @@ class ParticipantRepositoryImpl(
 ): ParticipantRepository {
     override suspend fun getAllParticipants(eventId: Int): List<Participant> =
         transaction(database) {
-            ParticipantTable.selectAll().map {
+            ParticipantTable.selectAll().where(ParticipantTable.eventId.eq(eventId)).map {
                 Participant(
-                    eventId = eventId,
+                    eventId = it[ParticipantTable.eventId].value,
                     userId = it[ParticipantTable.id].value,
                     name = it[ParticipantTable.name],
                     email = it[ParticipantTable.email],
@@ -28,11 +27,26 @@ class ParticipantRepositoryImpl(
             }
         }
 
-    override suspend fun getParticipant(id: Int): Participant? =
+    override suspend fun getParticipantByUserId(userId: Int): Participant? =
         transaction(database){
-            ParticipantTable.selectAll().where(ParticipantTable.eventId.eq(id)).map { result->
+            ParticipantTable.selectAll().where(ParticipantTable.userId.eq(userId)).map { result->
                 Participant(
-                    eventId = id,
+                    eventId = result[ParticipantTable.eventId].value,
+                    userId = result[ParticipantTable.userId]?.value,
+                    name = result[ParticipantTable.name],
+                    email = result[ParticipantTable.email],
+                    status = result[ParticipantTable.status],
+                    role = result[ParticipantTable.role],
+                    joinDate = result[ParticipantTable.joinDate],
+                )
+            }.singleOrNull()
+        }
+
+    override suspend fun getParticipantById(id: Int): Participant? =
+        transaction(database){
+            ParticipantTable.selectAll().where(ParticipantTable.id.eq(id)).map { result ->
+                Participant(
+                    eventId = result[ParticipantTable.eventId].value,
                     userId = result[ParticipantTable.userId]?.value,
                     name = result[ParticipantTable.name],
                     email = result[ParticipantTable.email],
