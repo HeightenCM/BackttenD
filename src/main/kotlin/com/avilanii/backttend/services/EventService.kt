@@ -19,7 +19,11 @@ class EventService(
     }
 
     suspend fun getEventById(userId: Int, eventId: Int): Event? {
-        return eventRepository.getEvent(eventId)
+        val isAllowed = eventRepository.checkEventPermission(userId, eventId, listOf(ParticipantRole.ORGANIZER))
+        return if(isAllowed)
+            eventRepository.getEvent(eventId)
+        else
+            null
     }
 
     suspend fun getEventRole(userId: Int, eventId: Int): ParticipantRole? {
