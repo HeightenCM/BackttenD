@@ -18,12 +18,16 @@ class EventService(
         return eventRepository.addEvent(event)
     }
 
-    suspend fun getEventById(userId: Int, eventId: Int): Event? {
-        val isAllowed = eventRepository.checkEventPermission(userId, eventId, listOf(ParticipantRole.ORGANIZER))
-        return if(isAllowed)
-            eventRepository.getEvent(eventId)
-        else
-            null
+    suspend fun getEventById(userId: Int, eventId: Int, roles: List<ParticipantRole>): Event? {
+        if (roles.isEmpty()) return eventRepository.getEvent(eventId)
+        else {
+            val isAllowed = eventRepository.checkEventPermission(userId, eventId, roles)
+            return if(isAllowed)
+                eventRepository.getEvent(eventId)
+            else
+                null
+        }
+
     }
 
     suspend fun getEventRole(userId: Int, eventId: Int): ParticipantRole? {

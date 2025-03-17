@@ -22,11 +22,3 @@ enum class ParticipantStatus{
 enum class ParticipantRole{
     ORGANIZER, ATTENDEE, HELPER
 }
-
-fun Int.toParticipantStatus(): ParticipantStatus{
-    return when(this){
-        0 -> ParticipantStatus.ACCEPTED
-        1 -> ParticipantStatus.PENDING
-        else -> ParticipantStatus.REJECTED
-    }
-}

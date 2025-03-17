@@ -35,14 +35,14 @@ fun Route.eventsRoutes(
             get("/{id}") {
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
-                val event = eventService.getEventById(userId, eventId) ?: return@get call.respondText("Event not found or access denied", status = HttpStatusCode.NotFound)
+                val event = eventService.getEventById(userId, eventId, listOf(ParticipantRole.ORGANIZER)) ?: return@get call.respondText("Event not found or access denied", status = HttpStatusCode.NotFound)
                 call.respond(HttpStatusCode.OK, event)
             }
 
             post<Event>{ event->
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val createdEventId = eventService.addEvent(event)
-                val createdEvent = eventService.getEventById(userId, createdEventId) ?: return@post call.respondText("Event not created", status = HttpStatusCode.BadRequest)
+                val createdEvent = eventService.getEventById(userId, createdEventId, emptyList()) ?: return@post call.respondText("Event not created", status = HttpStatusCode.BadRequest)
                 val user = userService.findById(userId)!!
                 participantService.addParticipant(Participant(
                     eventId = createdEventId,
