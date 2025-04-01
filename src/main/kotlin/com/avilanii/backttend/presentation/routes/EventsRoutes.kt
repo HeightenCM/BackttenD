@@ -55,6 +55,16 @@ fun Route.eventsRoutes(
                 ))
                 call.respond(HttpStatusCode.OK, createdEvent)
             }
+
+            get("/attending"){ //TODO("Required")
+                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                call.respond(HttpStatusCode.OK, Unit)
+            }
+
+            post("attending"){ //TODO("Required")
+                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                call.respond(HttpStatusCode.Created, Unit)
+            }
         }
     }
 }
