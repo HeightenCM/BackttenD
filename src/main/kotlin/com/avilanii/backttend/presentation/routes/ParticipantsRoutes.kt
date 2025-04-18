@@ -3,6 +3,7 @@ package com.avilanii.backttend.presentation.routes
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.infrastructure.datatransferobjects.toParticipantResponseDTO
 import com.avilanii.backttend.services.ParticipantService
+import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -10,7 +11,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.participantsRoutes(
-    participantService: ParticipantService
+    participantService: ParticipantService,
+    userService: UserService,
 ) {
     authenticate("auth-jwt") {
         route("/events/{id}/participants") {
@@ -22,7 +24,8 @@ fun Route.participantsRoutes(
 
             post<Participant> { participant ->
                 val eventId = call.parameters["id"] ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
-                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt()))
+                val userId = userService.findByEmail(participant.email)?.id
+                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt(), userId = userId))
                 val addedParticipant = participantService.getParticipantById(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
                 call.respond(HttpStatusCode.OK, addedParticipant)
             }

@@ -58,7 +58,8 @@ fun Route.eventsRoutes(
 
             get("/attending"){ //TODO("Required")
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                call.respond(HttpStatusCode.OK, Unit)
+                val events = eventService.getAllEvents(userId, ParticipantRole.ATTENDEE)
+                call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
             }
 
             post("attending"){ //TODO("Required")

@@ -15,6 +15,6 @@ fun Application.configureRouting() {
         authRoutes(userService)
         usersRoutes(userService)
         eventsRoutes(eventService, participantService, userService)
-        participantsRoutes(participantService)
+        participantsRoutes(participantService, userService)
     }
 }
