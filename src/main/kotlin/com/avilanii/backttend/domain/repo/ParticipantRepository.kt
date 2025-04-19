@@ -7,4 +7,5 @@ interface ParticipantRepository {
     suspend fun getParticipantByUserId(userId: Int): Participant?
     suspend fun getParticipantById(id: Int): Participant?
     suspend fun addParticipant(participant: Participant): Int
+    suspend fun updateUserId(userId: Int, userEmail: String)
 }

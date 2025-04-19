@@ -12,7 +12,7 @@ fun Application.configureRouting() {
     val participantService by inject<ParticipantService>()
     val userService by inject<UserService>()
     routing {
-        authRoutes(userService)
+        authRoutes(userService, participantService)
         usersRoutes(userService)
         eventsRoutes(eventService, participantService, userService)
         participantsRoutes(participantService, userService)

@@ -8,6 +8,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 class ParticipantRepositoryImpl(
     private val database: Database
@@ -69,4 +70,12 @@ class ParticipantRepositoryImpl(
                 it[joinDate] = participant.joinDate
             }.value
         }
+
+    override suspend fun updateUserId(userId: Int, userEmail: String) {
+        transaction(database) {
+            ParticipantTable.update({ ParticipantTable.email eq userEmail }) {
+                it[ParticipantTable.userId] = userId
+            }
+        }
+    }
 }

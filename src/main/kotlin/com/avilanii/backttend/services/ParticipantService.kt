@@ -21,4 +21,8 @@ class ParticipantService(
     suspend fun addParticipant(participant: Participant): Int {
         return participantRepository.addParticipant(participant)
     }
+
+    suspend fun updateUserIds(userId: Int, userEmail: String) {
+        return participantRepository.updateUserId(userId, userEmail)
+    }
 }

@@ -3,19 +3,22 @@ package com.avilanii.backttend.presentation.routes
 import com.avilanii.backttend.infrastructure.datatransferobjects.UserLoginRequest
 import com.avilanii.backttend.infrastructure.datatransferobjects.UserRegisterRequest
 import com.avilanii.backttend.plugins.generateJWT
+import com.avilanii.backttend.services.ParticipantService
 import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.authRoutes(
-    userService: UserService
+    userService: UserService,
+    participantService: ParticipantService,
 ) {
     route("/register") {
         post<UserRegisterRequest> { request: UserRegisterRequest ->
             if(userService.findByEmail(request.email)!=null)
                 return@post call.respond(HttpStatusCode.Conflict, "User already exists")
-            val createdUserId = userService.registerUser(request.name, request.email, request.password)?: return@post call.respond(HttpStatusCode.BadRequest)
+            val createdUserId = userService.registerUser(request.name, request.email, request.password)
+            participantService.updateUserIds(createdUserId,request.email)
             call.respond(HttpStatusCode.Created, createdUserId)
         }
     }
