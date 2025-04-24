@@ -8,4 +8,5 @@ interface ParticipantRepository {
     suspend fun getParticipantById(id: Int): Participant?
     suspend fun addParticipant(participant: Participant): Int
     suspend fun updateUserId(userId: Int, userEmail: String)
+    suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: Boolean): Int
 }

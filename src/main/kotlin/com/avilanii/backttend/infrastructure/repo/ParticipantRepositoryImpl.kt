@@ -1,14 +1,17 @@
 package com.avilanii.backttend.infrastructure.repo
 
 import com.avilanii.backttend.domain.models.Participant
+import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.domain.repo.ParticipantRepository
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.time.LocalDateTime
 
 class ParticipantRepositoryImpl(
     private val database: Database
@@ -78,4 +81,13 @@ class ParticipantRepositoryImpl(
             }
         }
     }
+
+    override suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: Boolean) =
+        transaction(database) {
+            ParticipantTable.update({ ParticipantTable.userId eq userId and (ParticipantTable.eventId eq eventId) }) {
+                it[ParticipantTable.status] = if(status)ParticipantStatus.ACCEPTED
+                else ParticipantStatus.REJECTED
+                it[joinDate] = if(status)LocalDateTime.now().toString() else null
+            }
+        }
 }

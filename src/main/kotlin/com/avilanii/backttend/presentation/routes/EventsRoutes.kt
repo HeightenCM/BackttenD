@@ -12,6 +12,7 @@ import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.Database
@@ -56,7 +57,7 @@ fun Route.eventsRoutes(
                 call.respond(HttpStatusCode.OK, createdEvent)
             }
 
-            get("/attending"){ //TODO("Required")
+            get("/attending"){
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val events = eventService.getAllEvents(userId, ParticipantRole.ATTENDEE)
                 call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
@@ -65,6 +66,14 @@ fun Route.eventsRoutes(
             post("attending"){ //TODO("Required")
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 call.respond(HttpStatusCode.Created, Unit)
+            }
+
+            post("/attending/{id}"){
+                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.BadRequest)
+                val isAccepted = call.receive<Boolean>()
+                participantService.updateParticipantStatus(userId, eventId, isAccepted)
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

@@ -7,5 +7,6 @@ data class Event(
     val id: Int? = null,
     val name: String,
     val budget: Int,
-    val dateTime: String
+    val dateTime: String,
+    val isPending: Boolean? = null,
 )

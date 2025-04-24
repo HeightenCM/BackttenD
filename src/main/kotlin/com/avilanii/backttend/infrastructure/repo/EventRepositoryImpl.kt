@@ -2,6 +2,7 @@ package com.avilanii.backttend.infrastructure.repo
 
 import com.avilanii.backttend.domain.models.Event
 import com.avilanii.backttend.domain.models.ParticipantRole
+import com.avilanii.backttend.domain.models.toBoolean
 import com.avilanii.backttend.domain.repo.EventRepository
 import com.avilanii.backttend.infrastructure.database.EventTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
@@ -17,7 +18,7 @@ class EventRepositoryImpl(
     override suspend fun getAllEvents(userId: Int, participantRole: ParticipantRole): List<Event> =
         transaction (database) {
             EventTable.innerJoin(ParticipantTable)
-                .select(EventTable.columns)
+                .select(EventTable.columns + ParticipantTable.status)
                 .where { ParticipantTable.userId eq userId }
                 .andWhere { ParticipantTable.role eq participantRole }
                 .map {
@@ -25,7 +26,9 @@ class EventRepositoryImpl(
                         id = it[EventTable.id].value,
                         name = it[EventTable.name],
                         budget = it[EventTable.budget],
-                        dateTime = it[EventTable.dateTime]
+                        dateTime = it[EventTable.dateTime],
+                        isPending = if(participantRole == ParticipantRole.ATTENDEE)it[ParticipantTable.status].toBoolean()
+                        else null,
                     )
                 }
         }

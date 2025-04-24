@@ -18,6 +18,13 @@ enum class ParticipantStatus{
     PENDING, ACCEPTED, REJECTED
 }
 
+fun ParticipantStatus.toBoolean(): Boolean? =
+    when (this) {
+        ParticipantStatus.PENDING -> true
+        ParticipantStatus.ACCEPTED -> false
+        ParticipantStatus.REJECTED -> false
+    }
+
 @Serializable
 enum class ParticipantRole{
     ORGANIZER, ATTENDEE, HELPER
