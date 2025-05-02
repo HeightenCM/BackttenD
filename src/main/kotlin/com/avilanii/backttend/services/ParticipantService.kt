@@ -1,6 +1,7 @@
 package com.avilanii.backttend.services
 
 import com.avilanii.backttend.domain.models.Participant
+import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.infrastructure.repo.ParticipantRepositoryImpl
 
 class ParticipantService(
@@ -26,7 +27,7 @@ class ParticipantService(
         return participantRepository.updateUserId(userId, userEmail)
     }
 
-    suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: Boolean): Int {
+    suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: ParticipantStatus): Int {
         return participantRepository.updateParticipantStatus(userId, eventId, status)
     }
 }

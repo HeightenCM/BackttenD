@@ -25,7 +25,7 @@ fun Route.participantsRoutes(
             post<Participant> { participant ->
                 val eventId = call.parameters["id"] ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
                 val userId = userService.findByEmail(participant.email)?.id
-                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt(), userId = userId))
+                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt(), userId = userId, qrCode = Math.random().toString()))
                 val addedParticipant = participantService.getParticipantById(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
                 call.respond(HttpStatusCode.OK, addedParticipant)
             }

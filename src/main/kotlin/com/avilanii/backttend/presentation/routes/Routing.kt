@@ -2,6 +2,7 @@ package com.avilanii.backttend.presentation.routes
 
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
+import com.avilanii.backttend.services.QrCodeService
 import com.avilanii.backttend.services.UserService
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -11,10 +12,12 @@ fun Application.configureRouting() {
     val eventService by inject<EventService>()
     val participantService by inject<ParticipantService>()
     val userService by inject<UserService>()
+    val qrService by inject<QrCodeService>()
     routing {
         authRoutes(userService, participantService)
         usersRoutes(userService)
         eventsRoutes(eventService, participantService, userService)
         participantsRoutes(participantService, userService)
+        qrCodeRoutes(qrService)
     }
 }

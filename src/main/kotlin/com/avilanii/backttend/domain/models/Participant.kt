@@ -10,19 +10,22 @@ data class Participant(
     val email: String,
     val status: ParticipantStatus = ParticipantStatus.PENDING,
     val role: ParticipantRole = ParticipantRole.ATTENDEE,
-    val joinDate: String? = null
+    val joinDate: String? = null,
+    val checkinDate: String? = null,
+    val qrCode: String = "",
 )
 
 @Serializable
 enum class ParticipantStatus{
-    PENDING, ACCEPTED, REJECTED
+    PENDING, ACCEPTED, REJECTED, CHECKED_IN
 }
 
-fun ParticipantStatus.toBoolean(): Boolean? =
+fun ParticipantStatus.isPending(): Boolean? =
     when (this) {
         ParticipantStatus.PENDING -> true
         ParticipantStatus.ACCEPTED -> false
         ParticipantStatus.REJECTED -> false
+        ParticipantStatus.CHECKED_IN -> true
     }
 
 @Serializable

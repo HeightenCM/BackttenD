@@ -12,4 +12,8 @@ class QrCodeService(
     suspend fun getAllQrCodes(participantId: Int): List<QrCode>{
         return qrCodeRepository.getAllQrCodes(participantId)
     }
+
+    suspend fun getQrCode(eventId: Int, userId: Int): String?{
+        return qrCodeRepository.getQrCode(eventId, userId)
+    }
 }

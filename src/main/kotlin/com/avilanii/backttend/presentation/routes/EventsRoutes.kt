@@ -52,7 +52,8 @@ fun Route.eventsRoutes(
                     email = user.email,
                     status = ParticipantStatus.ACCEPTED,
                     role = ParticipantRole.ORGANIZER,
-                    joinDate = LocalDateTime.now().toString()
+                    joinDate = LocalDateTime.now().toString(),
+                    qrCode = "ORGANIZER"
                 ))
                 call.respond(HttpStatusCode.OK, createdEvent)
             }
@@ -72,7 +73,8 @@ fun Route.eventsRoutes(
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.BadRequest)
                 val isAccepted = call.receive<Boolean>()
-                participantService.updateParticipantStatus(userId, eventId, isAccepted)
+                val status = if (isAccepted) ParticipantStatus.ACCEPTED else ParticipantStatus.REJECTED
+                participantService.updateParticipantStatus(userId, eventId, status)
                 call.respond(HttpStatusCode.OK)
             }
         }

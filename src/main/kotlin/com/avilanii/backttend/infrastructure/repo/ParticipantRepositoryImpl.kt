@@ -27,6 +27,8 @@ class ParticipantRepositoryImpl(
                     status = it[ParticipantTable.status],
                     role = it[ParticipantTable.role],
                     joinDate = it[ParticipantTable.joinDate],
+                    checkinDate = it[ParticipantTable.checkinDate],
+                    qrCode = ""
                 )
             }
         }
@@ -42,6 +44,8 @@ class ParticipantRepositoryImpl(
                     status = result[ParticipantTable.status],
                     role = result[ParticipantTable.role],
                     joinDate = result[ParticipantTable.joinDate],
+                    checkinDate = result[ParticipantTable.checkinDate],
+                    qrCode = result[ParticipantTable.qrCode],
                 )
             }.singleOrNull()
         }
@@ -57,6 +61,8 @@ class ParticipantRepositoryImpl(
                     status = result[ParticipantTable.status],
                     role = result[ParticipantTable.role],
                     joinDate = result[ParticipantTable.joinDate],
+                    checkinDate = result[ParticipantTable.checkinDate],
+                    qrCode = result[ParticipantTable.qrCode],
                 )
             }.singleOrNull()
         }
@@ -71,6 +77,8 @@ class ParticipantRepositoryImpl(
                 it[status] = participant.status
                 it[role] = participant.role
                 it[joinDate] = participant.joinDate
+                it[checkinDate] = participant.checkinDate
+                it[qrCode] = participant.qrCode
             }.value
         }
 
@@ -82,12 +90,12 @@ class ParticipantRepositoryImpl(
         }
     }
 
-    override suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: Boolean) =
+    override suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: ParticipantStatus) =
         transaction(database) {
             ParticipantTable.update({ ParticipantTable.userId eq userId and (ParticipantTable.eventId eq eventId) }) {
-                it[ParticipantTable.status] = if(status)ParticipantStatus.ACCEPTED
-                else ParticipantStatus.REJECTED
-                it[joinDate] = if(status)LocalDateTime.now().toString() else null
+                it[ParticipantTable.status] = status
+                it[joinDate] = if(status == ParticipantStatus.ACCEPTED)LocalDateTime.now().toString() else null
+                it[checkinDate] = if(status == ParticipantStatus.CHECKED_IN)LocalDateTime.now().toString() else null
             }
         }
 }

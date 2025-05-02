@@ -6,4 +6,6 @@ object EventTable: IntIdTable("events") {
     val name = varchar("name", 255)
     val budget = integer("budget")
     val dateTime = text("dateTime")
+    val qrcode = text("qrcode").nullable()
+    val qrexpirationdate = text("qrexpirationdate").nullable()
 }

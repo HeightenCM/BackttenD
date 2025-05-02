@@ -2,9 +2,11 @@ package com.avilanii.backttend.infrastructure.repo
 
 import com.avilanii.backttend.domain.models.QrCode
 import com.avilanii.backttend.domain.repo.QrCodeRepository
+import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import com.avilanii.backttend.infrastructure.database.QrCodeTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -30,5 +32,15 @@ class QrCodeRepositoryImpl(
                     participantId = result[QrCodeTable.participantId].value
                 )
             }
+        }
+
+    override suspend fun getQrCode(eventId: Int, userId: Int): String? =
+        transaction(database) {
+            ParticipantTable
+                .select(ParticipantTable.qrCode)
+                .where(ParticipantTable.userId eq userId)
+                .andWhere { ParticipantTable.eventId eq eventId }
+                .map { it[ParticipantTable.qrCode] }
+                .singleOrNull()
         }
 }

@@ -9,4 +9,5 @@ data class Event(
     val budget: Int,
     val dateTime: String,
     val isPending: Boolean? = null,
+    val organizer: String? = null,
 )
