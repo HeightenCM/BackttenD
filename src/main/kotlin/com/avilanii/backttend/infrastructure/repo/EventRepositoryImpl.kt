@@ -10,6 +10,8 @@ import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDateTime
+import java.util.UUID
 
 class EventRepositoryImpl(
     private val database: Database,
@@ -58,7 +60,9 @@ class EventRepositoryImpl(
             EventTable.insertAndGetId {
                 it[EventTable.name] = event.name
                 it[EventTable.budget] = event.budget
-                it[EventTable.dateTime] =event.dateTime
+                it[EventTable.dateTime] = event.dateTime
+                it[EventTable.qrcode] = UUID.randomUUID().toString()
+                it[EventTable.qrexpirationdate] = LocalDateTime.now().plusMinutes(5).toString()
             }.value
         }
 

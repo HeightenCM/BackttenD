@@ -5,7 +5,6 @@ import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantRole
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.infrastructure.datatransferobjects.toEventsResponseDTO
-import com.avilanii.backttend.infrastructure.repo.UserRepositoryImpl
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
 import com.avilanii.backttend.services.UserService
@@ -15,8 +14,6 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.exposed.sql.Database
-import org.koin.ktor.ext.inject
 import java.time.LocalDateTime
 
 fun Route.eventsRoutes(

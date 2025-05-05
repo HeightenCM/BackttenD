@@ -6,9 +6,9 @@ import com.avilanii.backttend.services.ParticipantService
 import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.util.UUID
 
 fun Route.participantsRoutes(
     participantService: ParticipantService,
@@ -25,7 +25,7 @@ fun Route.participantsRoutes(
             post<Participant> { participant ->
                 val eventId = call.parameters["id"] ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
                 val userId = userService.findByEmail(participant.email)?.id
-                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt(), userId = userId, qrCode = Math.random().toString()))
+                val participantId = participantService.addParticipant(participant.copy(eventId = eventId.toInt(), userId = userId, qrCode = UUID.randomUUID().toString()))
                 val addedParticipant = participantService.getParticipantById(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
                 call.respond(HttpStatusCode.OK, addedParticipant)
             }
