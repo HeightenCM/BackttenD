@@ -48,15 +48,14 @@ class QrCodeRepositoryImpl(
         transaction(database) {
             val qrExpDate = EventTable.select(EventTable.qrexpirationdate)
                 .where { EventTable.id eq eventId }
-                .map { LocalDateTime.parse(it.toString()) }.single()
-            if (qrExpDate.isAfter(LocalDateTime.now())) {
-                EventTable.select(EventTable.qrcode).where { EventTable.id eq eventId }.map { it.toString() }.single()
-            } else {
+                .map { row -> LocalDateTime.parse(row[EventTable.qrexpirationdate]!!) }.single()
+            if (qrExpDate.isBefore(LocalDateTime.now())) {
                 EventTable.update {
                     it[EventTable.qrcode] = UUID.randomUUID().toString()
                     it[EventTable.qrexpirationdate] = LocalDateTime.now().plusMinutes(5).toString()
                 }
-                EventTable.select(EventTable.qrcode).where { EventTable.id eq eventId }.map { it.toString() }.single()
             }
+            EventTable.select(EventTable.qrcode).where { EventTable.id eq eventId }
+                .map { row -> row[EventTable.qrcode]!! }.single()
         }
 }
