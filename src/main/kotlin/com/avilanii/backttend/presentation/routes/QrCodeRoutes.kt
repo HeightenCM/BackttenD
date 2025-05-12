@@ -1,5 +1,6 @@
 package com.avilanii.backttend.presentation.routes
 
+import com.avilanii.backttend.domain.models.ExternalQR
 import com.avilanii.backttend.services.QrCodeService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.*
@@ -23,6 +24,17 @@ fun Route.qrCodeRoutes(
                 val eventId = call.parameters["eventId"]?.toIntOrNull() ?: return@get call.respond(status = HttpStatusCode.BadRequest, "Bad request")
                 val qrCode = qrCodeService.getTimeLimitedQrCode(eventId, userId)
                 call.respond(HttpStatusCode.OK, qrCode)
+            }
+            get {
+                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                val qrCodes = qrCodeService.getAllQrCodes(userId)
+                call.respond(HttpStatusCode.OK, qrCodes)
+
+            }
+            post<ExternalQR> { externalQr ->
+                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                val registeredQr = qrCodeService.registerExternalQrCode(userId, externalQr)
+                call.respond(HttpStatusCode.Created, registeredQr)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.avilanii.backttend.infrastructure.repo
 
+import com.avilanii.backttend.domain.models.ExternalQR
 import com.avilanii.backttend.domain.repo.QrCodeRepository
 import com.avilanii.backttend.infrastructure.database.EventTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
@@ -17,20 +18,32 @@ import java.util.UUID
 class QrCodeRepositoryImpl(
     private val database: Database
 ): QrCodeRepository {
-    override suspend fun registerExternalQrCode(userId: Int, qrCode: String): String =
+    override suspend fun registerExternalQrCode(userId: Int, externalQR: ExternalQR): ExternalQR =
         transaction(database) {
             val id = QrCodeTable.insertAndGetId {
-                it[value] = qrCode
+                it[value] = externalQR.value
+                it[title] = externalQR.title
                 it[QrCodeTable.userId] = userId
             }.value
-            QrCodeTable.select(QrCodeTable.value).where(QrCodeTable.id eq id).map { it.toString() }.single()
+            QrCodeTable.select(columns = listOf(QrCodeTable.value, QrCodeTable.title))
+                .where(QrCodeTable.id eq id)
+                .map { resultRow ->
+                    ExternalQR(
+                        value = resultRow[QrCodeTable.value],
+                        title = resultRow[QrCodeTable.title],
+                    )
+                }.single()
         }
 
-    override suspend fun getAllQrCodes(userId: Int): List<String> =
+    override suspend fun getAllQrCodes(userId: Int): List<ExternalQR> =
         transaction(database) {
-            TODO("Implement the QR Wallet thing: will probably have to add a name for QRs.")
-            QrCodeTable.selectAll().where(QrCodeTable.userId.eq(userId)).map {
-                it.toString()
+            QrCodeTable.selectAll()
+                .where(QrCodeTable.userId.eq(userId))
+                .map { resultRow ->
+                    ExternalQR(
+                        value = resultRow[QrCodeTable.value],
+                        title = resultRow[QrCodeTable.title],
+                    )
             }
         }
 
@@ -50,7 +63,9 @@ class QrCodeRepositoryImpl(
                 .where { EventTable.id eq eventId }
                 .map { row -> LocalDateTime.parse(row[EventTable.qrexpirationdate]!!) }.single()
             if (qrExpDate.isBefore(LocalDateTime.now())) {
-                EventTable.update {
+                EventTable.update(
+                    where = { EventTable.id eq eventId }
+                ) {
                     it[EventTable.qrcode] = UUID.randomUUID().toString()
                     it[EventTable.qrexpirationdate] = LocalDateTime.now().plusMinutes(5).toString()
                 }

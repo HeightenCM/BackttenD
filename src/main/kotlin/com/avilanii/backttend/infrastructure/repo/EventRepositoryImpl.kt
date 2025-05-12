@@ -89,4 +89,26 @@ class EventRepositoryImpl(
                 .mapNotNull { it[ParticipantTable.role] }
                 .singleOrNull()
         }
+
+    override suspend fun getEventByQr(qrCode: String): Event? =
+        transaction(database){
+            EventTable
+                .selectAll()
+                .where(EventTable.qrcode eq qrCode)
+                .map { it ->
+                    Event(
+                        id = it[EventTable.id].value,
+                        name = it[EventTable.name],
+                        budget = it[EventTable.budget],
+                        dateTime = it[EventTable.dateTime],
+                        isPending = false,
+                        organizer = ParticipantTable
+                            .select(ParticipantTable.name)
+                            .where{ ParticipantTable.eventId eq it[EventTable.id].value}
+                            .andWhere { ParticipantTable.role eq ParticipantRole.ORGANIZER }
+                            .map{ row -> row[ParticipantTable.name]}
+                            .singleOrNull()
+                    )
+                }.singleOrNull()
+        }
 }

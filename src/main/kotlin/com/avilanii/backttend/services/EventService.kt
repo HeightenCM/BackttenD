@@ -33,4 +33,8 @@ class EventService(
     suspend fun getEventRole(userId: Int, eventId: Int): ParticipantRole? {
         return eventRepository.getEventRole(userId, eventId)
     }
+
+    suspend fun getEventByQr(qrCode: String): Event? {
+        return eventRepository.getEventByQr(qrCode)
+    }
 }

@@ -9,4 +9,5 @@ interface EventRepository {
     suspend fun addEvent(event: Event): Int
     suspend fun checkEventPermission(userId: Int, eventId: Int, requiredRole: List<ParticipantRole>): Boolean
     suspend fun getEventRole(userId: Int, eventId: Int): ParticipantRole?
+    suspend fun getEventByQr(qrCode: String): Event?
 }

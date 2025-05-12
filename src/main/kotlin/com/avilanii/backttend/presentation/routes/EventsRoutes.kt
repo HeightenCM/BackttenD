@@ -15,6 +15,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.time.LocalDateTime
+import java.util.UUID
 
 fun Route.eventsRoutes(
     eventService: EventService,
@@ -61,9 +62,26 @@ fun Route.eventsRoutes(
                 call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
             }
 
-            post("attending"){ //TODO("Required")
+            post<String>("/attending"){ qrValue ->
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                call.respond(HttpStatusCode.Created, Unit)
+                val eventAttendingAdded = eventService.getEventByQr(qrValue)
+                if(eventAttendingAdded != null){
+                    userService.findById(userId)?.let { user ->
+                        participantService.addParticipant(
+                            Participant(
+                                eventId = eventAttendingAdded.id!!,
+                                userId = userId,
+                                name = user.name,
+                                email = user.email,
+                                status = ParticipantStatus.ACCEPTED,
+                                role = ParticipantRole.ATTENDEE,
+                                joinDate = LocalDateTime.now().toString(),
+                                qrCode = UUID.randomUUID().toString()
+                            )
+                        )
+                    }
+                    call.respond(HttpStatusCode.Created, eventAttendingAdded)
+                } else call.respond(HttpStatusCode.NoContent, "No event found." )
             }
 
             post("/attending/{id}"){
