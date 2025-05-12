@@ -62,7 +62,7 @@ fun Route.eventsRoutes(
                 call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
             }
 
-            post<String>("/attending"){ qrValue ->
+            post<String>("/attending"){ qrValue -> TODO("Make sure to check QR expiration date!!!")
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val eventAttendingAdded = eventService.getEventByQr(qrValue)
                 if(eventAttendingAdded != null){
