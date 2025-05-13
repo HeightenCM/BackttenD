@@ -83,7 +83,7 @@ fun Route.eventsRoutes(
                         }
                         call.respond(HttpStatusCode.Created, eventAttendingAdded)
                     } else call.respond(HttpStatusCode.BadRequest, "Already enrolled for event.")
-                } else call.respond(HttpStatusCode.NoContent, "No event found or QR expired." )
+                } else call.respond(HttpStatusCode.NotFound, "No event found or QR expired." )
             }
 
             post("/attending/{id}"){
