@@ -96,7 +96,7 @@ class EventRepositoryImpl(
                 .selectAll()
                 .where(EventTable.qrcode eq qrCode)
                 .map { it ->
-                    if (LocalDateTime.parse(it[EventTable.qrexpirationdate]!!).isBefore(LocalDateTime.now())) {
+                    if (LocalDateTime.parse(it[EventTable.qrexpirationdate]!!).isAfter(LocalDateTime.now())) {
                         Event(
                             id = it[EventTable.id].value,
                             name = it[EventTable.name],
