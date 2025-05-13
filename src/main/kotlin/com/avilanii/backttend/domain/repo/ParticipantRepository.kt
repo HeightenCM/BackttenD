@@ -10,4 +10,5 @@ interface ParticipantRepository {
     suspend fun addParticipant(participant: Participant): Int
     suspend fun updateUserId(userId: Int, userEmail: String)
     suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: ParticipantStatus): Int
+    suspend fun checkParticipationEnrollment(userId: Int, eventId: Int): Boolean
 }

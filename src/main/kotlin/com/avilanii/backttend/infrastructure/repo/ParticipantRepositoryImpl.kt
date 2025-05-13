@@ -98,4 +98,15 @@ class ParticipantRepositoryImpl(
                 it[checkinDate] = if(status == ParticipantStatus.CHECKED_IN)LocalDateTime.now().toString() else null
             }
         }
+
+    override suspend fun checkParticipationEnrollment(userId: Int, eventId: Int): Boolean =
+        transaction(database){
+            ParticipantTable
+                .selectAll()
+                .where{
+                    (ParticipantTable.userId eq userId) and (ParticipantTable.eventId eq eventId)
+                }
+                .limit(1)
+                .any()
+        }
 }

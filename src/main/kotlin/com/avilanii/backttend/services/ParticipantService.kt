@@ -30,4 +30,8 @@ class ParticipantService(
     suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: ParticipantStatus): Int {
         return participantRepository.updateParticipantStatus(userId, eventId, status)
     }
+
+    suspend fun checkParticipantEnrollment(userId: Int, eventId: Int): Boolean {
+        return participantRepository.checkParticipationEnrollment(userId, eventId)
+    }
 }

@@ -96,19 +96,21 @@ class EventRepositoryImpl(
                 .selectAll()
                 .where(EventTable.qrcode eq qrCode)
                 .map { it ->
-                    Event(
-                        id = it[EventTable.id].value,
-                        name = it[EventTable.name],
-                        budget = it[EventTable.budget],
-                        dateTime = it[EventTable.dateTime],
-                        isPending = false,
-                        organizer = ParticipantTable
-                            .select(ParticipantTable.name)
-                            .where{ ParticipantTable.eventId eq it[EventTable.id].value}
-                            .andWhere { ParticipantTable.role eq ParticipantRole.ORGANIZER }
-                            .map{ row -> row[ParticipantTable.name]}
-                            .singleOrNull()
-                    )
+                    if (LocalDateTime.parse(it[EventTable.qrexpirationdate]!!).isBefore(LocalDateTime.now())) {
+                        Event(
+                            id = it[EventTable.id].value,
+                            name = it[EventTable.name],
+                            budget = it[EventTable.budget],
+                            dateTime = it[EventTable.dateTime],
+                            isPending = false,
+                            organizer = ParticipantTable
+                                .select(ParticipantTable.name)
+                                .where { ParticipantTable.eventId eq it[EventTable.id].value }
+                                .andWhere { ParticipantTable.role eq ParticipantRole.ORGANIZER }
+                                .map { row -> row[ParticipantTable.name] }
+                                .singleOrNull()
+                        )
+                    } else null
                 }.singleOrNull()
         }
 }

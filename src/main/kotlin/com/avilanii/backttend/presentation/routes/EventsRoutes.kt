@@ -62,26 +62,28 @@ fun Route.eventsRoutes(
                 call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
             }
 
-            post<String>("/attending"){ qrValue -> TODO("Make sure to check QR expiration date!!!")
+            post<String>("/attending"){ qrValue ->
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val eventAttendingAdded = eventService.getEventByQr(qrValue)
                 if(eventAttendingAdded != null){
-                    userService.findById(userId)?.let { user ->
-                        participantService.addParticipant(
-                            Participant(
-                                eventId = eventAttendingAdded.id!!,
-                                userId = userId,
-                                name = user.name,
-                                email = user.email,
-                                status = ParticipantStatus.ACCEPTED,
-                                role = ParticipantRole.ATTENDEE,
-                                joinDate = LocalDateTime.now().toString(),
-                                qrCode = UUID.randomUUID().toString()
+                    if(!participantService.checkParticipantEnrollment(userId, eventAttendingAdded.id!!)) {
+                        userService.findById(userId)?.let { user ->
+                            participantService.addParticipant(
+                                Participant(
+                                    eventId = eventAttendingAdded.id,
+                                    userId = userId,
+                                    name = user.name,
+                                    email = user.email,
+                                    status = ParticipantStatus.ACCEPTED,
+                                    role = ParticipantRole.ATTENDEE,
+                                    joinDate = LocalDateTime.now().toString(),
+                                    qrCode = UUID.randomUUID().toString()
+                                )
                             )
-                        )
-                    }
-                    call.respond(HttpStatusCode.Created, eventAttendingAdded)
-                } else call.respond(HttpStatusCode.NoContent, "No event found." )
+                        }
+                        call.respond(HttpStatusCode.Created, eventAttendingAdded)
+                    } else call.respond(HttpStatusCode.BadRequest, "Already enrolled for event.")
+                } else call.respond(HttpStatusCode.NoContent, "No event found or QR expired." )
             }
 
             post("/attending/{id}"){
