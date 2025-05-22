@@ -5,6 +5,6 @@ import org.jetbrains.exposed.sql.ReferenceOption
 
 object QrCodeTable : IntIdTable("qrcode") {
     val userId = reference("user_id", UserTable, onDelete = ReferenceOption.CASCADE)
-    val value = text("value").uniqueIndex()
+    val value = text("value")
     val title = varchar("title", 255)
 }

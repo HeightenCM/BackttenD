@@ -34,4 +34,10 @@ class ParticipantService(
     suspend fun checkParticipantEnrollment(userId: Int, eventId: Int): Boolean {
         return participantRepository.checkParticipationEnrollment(userId, eventId)
     }
+
+    suspend fun hasParticipantCheckedIn(eventId: Int, scannedQr: String): Boolean? {
+        return if(participantRepository.checkParticipantEnrollmentByQr(eventId, scannedQr)) {
+            participantRepository.checkHasParticipantCheckedIn(eventId, scannedQr)
+        } else null // null if non-existent participant
+    }
 }

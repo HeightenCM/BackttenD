@@ -109,4 +109,36 @@ class ParticipantRepositoryImpl(
                 .limit(1)
                 .any()
         }
+
+    override suspend fun checkParticipantEnrollmentByQr(eventId: Int, qrCode: String): Boolean =
+        transaction(database){
+            ParticipantTable
+                .selectAll()
+                .where{
+                    (ParticipantTable.eventId eq eventId) and (ParticipantTable.qrCode eq qrCode)
+                }
+                .limit(1)
+                .any()
+        }
+
+    override suspend fun checkHasParticipantCheckedIn(eventId: Int, qrCode: String): Boolean =
+        transaction(database){
+            val checkInDate = ParticipantTable
+                .select(ParticipantTable.checkinDate)
+                .where{
+                    (ParticipantTable.eventId eq eventId) and (ParticipantTable.qrCode eq qrCode)
+                }
+                .map { it[ParticipantTable.checkinDate] }
+                .singleOrNull()
+            if (checkInDate == null){
+                ParticipantTable.update(
+                    where = { (ParticipantTable.eventId eq eventId) and (ParticipantTable.qrCode eq qrCode) }
+                ){
+                    it[ParticipantTable.checkinDate] = LocalDateTime.now().toString()
+                    it[ParticipantTable.status] = ParticipantStatus.CHECKED_IN
+                }
+                false
+            } else
+                true
+        }
 }
