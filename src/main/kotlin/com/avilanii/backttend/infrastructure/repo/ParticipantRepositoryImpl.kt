@@ -141,4 +141,16 @@ class ParticipantRepositoryImpl(
             } else
                 true
         }
+
+    override suspend fun addEventTier(eventId: Int, tier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteEventTier(eventId: Int, tier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllEventTiers(eventId: Int): List<String> {
+        TODO("Not yet implemented")
+    }
 }

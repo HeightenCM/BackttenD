@@ -13,4 +13,7 @@ interface ParticipantRepository {
     suspend fun checkParticipationEnrollment(userId: Int, eventId: Int): Boolean
     suspend fun checkParticipantEnrollmentByQr(eventId: Int, qrCode: String): Boolean
     suspend fun checkHasParticipantCheckedIn(eventId: Int, qrCode: String): Boolean
+    suspend fun addEventTier(eventId: Int, tier: String)
+    suspend fun deleteEventTier(eventId: Int, tier: String)
+    suspend fun getAllEventTiers(eventId: Int) : List<String>
 }
