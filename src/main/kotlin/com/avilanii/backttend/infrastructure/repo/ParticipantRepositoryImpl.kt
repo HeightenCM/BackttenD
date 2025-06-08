@@ -1,12 +1,15 @@
 package com.avilanii.backttend.infrastructure.repo
 
 import com.avilanii.backttend.domain.models.Participant
+import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.domain.repo.ParticipantRepository
+import com.avilanii.backttend.infrastructure.database.ParticipantInteractionTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -26,8 +29,6 @@ class ParticipantRepositoryImpl(
                     email = it[ParticipantTable.email],
                     status = it[ParticipantTable.status],
                     role = it[ParticipantTable.role],
-                    joinDate = it[ParticipantTable.joinDate],
-                    checkinDate = it[ParticipantTable.checkinDate],
                     qrCode = ""
                 )
             }
@@ -43,8 +44,6 @@ class ParticipantRepositoryImpl(
                     email = result[ParticipantTable.email],
                     status = result[ParticipantTable.status],
                     role = result[ParticipantTable.role],
-                    joinDate = result[ParticipantTable.joinDate],
-                    checkinDate = result[ParticipantTable.checkinDate],
                     qrCode = result[ParticipantTable.qrCode],
                 )
             }.singleOrNull()
@@ -60,8 +59,6 @@ class ParticipantRepositoryImpl(
                     email = result[ParticipantTable.email],
                     status = result[ParticipantTable.status],
                     role = result[ParticipantTable.role],
-                    joinDate = result[ParticipantTable.joinDate],
-                    checkinDate = result[ParticipantTable.checkinDate],
                     qrCode = result[ParticipantTable.qrCode],
                 )
             }.singleOrNull()
@@ -69,17 +66,20 @@ class ParticipantRepositoryImpl(
 
     override suspend fun addParticipant(participant: Participant): Int =
         transaction(database) {
-            ParticipantTable.insertAndGetId {
+            val participantId = ParticipantTable.insertAndGetId {
                 it[eventId] = participant.eventId
                 it[userId] = participant.userId
                 it[name] = participant.name
                 it[email] = participant.email
                 it[status] = participant.status
                 it[role] = participant.role
-                it[joinDate] = participant.joinDate
-                it[checkinDate] = participant.checkinDate
                 it[qrCode] = participant.qrCode
             }.value
+            ParticipantInteractionTable.insert {
+                it[ParticipantInteractionTable.participantId] = participantId
+                it[ParticipantInteractionTable.interaction] = ParticipantInteraction.JOIN
+            }
+            participantId
         }
 
     override suspend fun updateUserId(userId: Int, userEmail: String) {
@@ -92,11 +92,35 @@ class ParticipantRepositoryImpl(
 
     override suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: ParticipantStatus) =
         transaction(database) {
-            ParticipantTable.update({ ParticipantTable.userId eq userId and (ParticipantTable.eventId eq eventId) }) {
+            val participantId = ParticipantTable.select(
+                ParticipantTable.id
+            ).where{
+                ParticipantTable.userId eq userId and (ParticipantTable.eventId eq eventId)
+            }.map { it[ParticipantTable.userId]!!.value }.single()
+            ParticipantTable.update(
+                where = {ParticipantTable.id eq participantId} ) {
                 it[ParticipantTable.status] = status
-                it[joinDate] = if(status == ParticipantStatus.ACCEPTED)LocalDateTime.now().toString() else null
-                it[checkinDate] = if(status == ParticipantStatus.CHECKED_IN)LocalDateTime.now().toString() else null
             }
+            val interaction = when(status) {
+                ParticipantStatus.ACCEPTED -> {
+                    ParticipantInteraction.JOIN
+                }
+                ParticipantStatus.CHECKED_IN -> {
+                    ParticipantInteraction.CHECK_IN
+                }
+                ParticipantStatus.CHECKED_OUT -> {
+                    ParticipantInteraction.CHECK_OUT
+                }
+                else -> null
+            }
+            if(interaction != null) {
+                ParticipantInteractionTable.insert {
+                    it[ParticipantInteractionTable.participantId] = participantId
+                    it[ParticipantInteractionTable.interaction] = interaction
+                    it[ParticipantInteractionTable.date] = LocalDateTime.now().toString()
+                }
+            }
+            participantId
         }
 
     override suspend fun checkParticipationEnrollment(userId: Int, eventId: Int): Boolean =
@@ -110,36 +134,46 @@ class ParticipantRepositoryImpl(
                 .any()
         }
 
-    override suspend fun checkParticipantEnrollmentByQr(eventId: Int, qrCode: String): Boolean =
+    override suspend fun checkParticipantEnrollmentByQr(eventId: Int, qrCode: String): Int? =
         transaction(database){
             ParticipantTable
                 .selectAll()
                 .where{
                     (ParticipantTable.eventId eq eventId) and (ParticipantTable.qrCode eq qrCode)
                 }
-                .limit(1)
-                .any()
+                .map { it[ParticipantTable.id].value }
+                .singleOrNull()
         }
 
-    override suspend fun checkHasParticipantCheckedIn(eventId: Int, qrCode: String): Boolean =
+    override suspend fun checkInCheckOutParticipant(participantId: Int, interaction: ParticipantInteraction): Boolean =
         transaction(database){
-            val checkInDate = ParticipantTable
-                .select(ParticipantTable.checkinDate)
-                .where{
-                    (ParticipantTable.eventId eq eventId) and (ParticipantTable.qrCode eq qrCode)
+            val results = ParticipantInteractionTable
+                .selectAll()
+                .where { ParticipantInteractionTable.participantId eq participantId }
+                .map {it[ParticipantInteractionTable.interaction] }
+            var checkInCount = 0
+            var checkOutCount = 0
+            for(item in results) {
+                if(item == ParticipantInteraction.CHECK_IN)
+                    checkInCount++;
+                else if (item == ParticipantInteraction.CHECK_OUT)
+                    checkOutCount++;
+            }
+            if (interaction == ParticipantInteraction.CHECK_IN && checkInCount == checkOutCount) {
+                ParticipantInteractionTable.insert {
+                    it[ParticipantInteractionTable.participantId] = participantId
+                    it[ParticipantInteractionTable.interaction] = ParticipantInteraction.CHECK_IN
+                    it[ParticipantInteractionTable.date] = LocalDateTime.now().toString()
                 }
-                .map { it[ParticipantTable.checkinDate] }
-                .singleOrNull()
-            if (checkInDate == null){
-                ParticipantTable.update(
-                    where = { (ParticipantTable.eventId eq eventId) and (ParticipantTable.qrCode eq qrCode) }
-                ){
-                    it[ParticipantTable.checkinDate] = LocalDateTime.now().toString()
-                    it[ParticipantTable.status] = ParticipantStatus.CHECKED_IN
-                }
-                false
-            } else
                 true
+            } else if (interaction == ParticipantInteraction.CHECK_OUT && checkInCount > checkOutCount) {
+                ParticipantInteractionTable.insert {
+                    it[ParticipantInteractionTable.participantId] = participantId
+                    it[ParticipantInteractionTable.interaction] = ParticipantInteraction.CHECK_OUT
+                    it[ParticipantInteractionTable.date] = LocalDateTime.now().toString()
+                }
+                true
+            } else false
         }
 
     override suspend fun addEventTier(eventId: Int, tier: String) {

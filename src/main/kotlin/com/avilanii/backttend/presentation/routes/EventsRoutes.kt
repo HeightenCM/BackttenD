@@ -50,7 +50,6 @@ fun Route.eventsRoutes(
                     email = user.email,
                     status = ParticipantStatus.ACCEPTED,
                     role = ParticipantRole.ORGANIZER,
-                    joinDate = LocalDateTime.now().toString(),
                     qrCode = "ORGANIZER"
                 ))
                 call.respond(HttpStatusCode.OK, createdEvent)
@@ -76,7 +75,6 @@ fun Route.eventsRoutes(
                                     email = user.email,
                                     status = ParticipantStatus.ACCEPTED,
                                     role = ParticipantRole.ATTENDEE,
-                                    joinDate = LocalDateTime.now().toString(),
                                     qrCode = UUID.randomUUID().toString()
                                 )
                             )

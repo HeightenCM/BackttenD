@@ -12,7 +12,5 @@ object ParticipantTable: IntIdTable("participants") {
     val email = varchar("email", 255)
     val status = enumerationByName("status", 50, ParticipantStatus::class)
     val role = enumerationByName("role", 50, ParticipantRole::class)
-    val joinDate = text("join_date").nullable()
-    val checkinDate = text("checkin_date").nullable()
     val qrCode = text("qr_code")
 }

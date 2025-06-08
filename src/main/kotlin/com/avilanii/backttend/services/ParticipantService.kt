@@ -1,6 +1,7 @@
 package com.avilanii.backttend.services
 
 import com.avilanii.backttend.domain.models.Participant
+import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.infrastructure.repo.ParticipantRepositoryImpl
 
@@ -35,9 +36,19 @@ class ParticipantService(
         return participantRepository.checkParticipationEnrollment(userId, eventId)
     }
 
-    suspend fun hasParticipantCheckedIn(eventId: Int, scannedQr: String): Boolean? {
-        return if(participantRepository.checkParticipantEnrollmentByQr(eventId, scannedQr)) {
-            participantRepository.checkHasParticipantCheckedIn(eventId, scannedQr)
-        } else null // null if non-existent participant
+    suspend fun checkInParticipant(eventId: Int, scannedQr: String): Boolean? {
+        return participantRepository.checkParticipantEnrollmentByQr(eventId, scannedQr)
+            ?.let{
+                participantRepository
+                    .checkInCheckOutParticipant(it, ParticipantInteraction.CHECK_IN)
+            } // null if non-existent participant
+    }
+
+    suspend fun checkOutParticipant(eventId: Int, scannedQr: String): Boolean? {
+        return participantRepository.checkParticipantEnrollmentByQr(eventId, scannedQr)
+            ?.let {
+                participantRepository
+                    .checkInCheckOutParticipant(it, ParticipantInteraction.CHECK_OUT)
+            } // null if non-existent participant
     }
 }

@@ -3,7 +3,6 @@ package com.avilanii.backttend.infrastructure.repo
 import com.avilanii.backttend.domain.models.Event
 import com.avilanii.backttend.domain.models.ParticipantRole
 import com.avilanii.backttend.domain.models.ParticipantStatus
-import com.avilanii.backttend.domain.models.isPending
 import com.avilanii.backttend.domain.repo.EventRepository
 import com.avilanii.backttend.infrastructure.database.EventTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
@@ -28,8 +27,12 @@ class EventRepositoryImpl(
                         name = it[EventTable.name],
                         budget = it[EventTable.budget],
                         dateTime = it[EventTable.dateTime],
-                        isPending = if(participantRole == ParticipantRole.ATTENDEE)it[ParticipantTable.status].isPending()
-                        else null,
+                        isPending = if(participantRole == ParticipantRole.ATTENDEE){
+                            it[ParticipantTable.status] == ParticipantStatus.PENDING
+                        }
+                            else
+                                null
+                        ,
                         organizer = ParticipantTable
                             .select(ParticipantTable.name)
                             .where{ ParticipantTable.eventId eq it[EventTable.id].value}

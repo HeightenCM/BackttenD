@@ -1,6 +1,7 @@
 package com.avilanii.backttend.presentation.routes
 
 import com.avilanii.backttend.domain.models.Participant
+import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.infrastructure.datatransferobjects.CheckInConfirmationDTO
 import com.avilanii.backttend.infrastructure.datatransferobjects.toParticipantResponseDTO
 import com.avilanii.backttend.services.ParticipantService
@@ -35,9 +36,9 @@ fun Route.participantsRoutes(
             get("/checkin"){
                 val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("No id provided", status = HttpStatusCode.NotFound)
                 val scannedQr = call.receiveText()
-                val hasParticipantCheckedIn = participantService.hasParticipantCheckedIn(eventId, scannedQr)
-                hasParticipantCheckedIn?.let {
-                    if (!hasParticipantCheckedIn) {
+                val checkInResult = participantService.checkInParticipant(eventId, scannedQr)
+                checkInResult?.let {
+                    if (checkInResult) {
                         call.respond(HttpStatusCode.OK,
                             CheckInConfirmationDTO(
                                 "The participant is good to go.",
@@ -45,6 +46,23 @@ fun Route.participantsRoutes(
                     } else call.respond(HttpStatusCode.OK,
                         CheckInConfirmationDTO(
                             "The participant has already checked in!",
+                            false))
+                } ?: call.respondText("Invalid QR Code!", status = HttpStatusCode.BadRequest)
+            }
+
+            get("/checkout"){
+                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("No id provided", status = HttpStatusCode.NotFound)
+                val scannedQr = call.receiveText()
+                val checkOutResult = participantService.checkOutParticipant(eventId, scannedQr)
+                checkOutResult?.let {
+                    if (checkOutResult) {
+                        call.respond(HttpStatusCode.OK,
+                            CheckInConfirmationDTO(
+                                "The participant is free to leave.",
+                                true))
+                    } else call.respond(HttpStatusCode.OK,
+                        CheckInConfirmationDTO(
+                            "The participant hasn't checked in already!",
                             false))
                 } ?: call.respondText("Invalid QR Code!", status = HttpStatusCode.BadRequest)
             }
