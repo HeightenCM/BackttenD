@@ -12,7 +12,9 @@ fun Application.configureDatabase() {
     db.apply {
         transaction {
             create(EventTable)
+            create(EventTierTable)
             create(ParticipantTable)
+            create(ParticipantInteractionTable)
             create(QrCodeTable)
             create(UserTable)
         }

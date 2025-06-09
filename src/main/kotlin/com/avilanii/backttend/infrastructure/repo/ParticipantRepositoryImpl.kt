@@ -78,6 +78,7 @@ class ParticipantRepositoryImpl(
             ParticipantInteractionTable.insert {
                 it[ParticipantInteractionTable.participantId] = participantId
                 it[ParticipantInteractionTable.interaction] = ParticipantInteraction.JOIN
+                it[ParticipantInteractionTable.date] = LocalDateTime.now().toString()
             }
             participantId
         }
@@ -155,9 +156,9 @@ class ParticipantRepositoryImpl(
             var checkOutCount = 0
             for(item in results) {
                 if(item == ParticipantInteraction.CHECK_IN)
-                    checkInCount++;
+                    checkInCount++
                 else if (item == ParticipantInteraction.CHECK_OUT)
-                    checkOutCount++;
+                    checkOutCount++
             }
             if (interaction == ParticipantInteraction.CHECK_IN && checkInCount == checkOutCount) {
                 ParticipantInteractionTable.insert {
