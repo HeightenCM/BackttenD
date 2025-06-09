@@ -1,14 +1,18 @@
 package com.avilanii.backttend.infrastructure.repo
 
+import com.avilanii.backttend.domain.models.AttendeeTier
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.domain.repo.ParticipantRepository
+import com.avilanii.backttend.infrastructure.database.EventTierTable
+import com.avilanii.backttend.infrastructure.database.EventTierTable.organizerId
 import com.avilanii.backttend.infrastructure.database.ParticipantInteractionTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
@@ -177,15 +181,27 @@ class ParticipantRepositoryImpl(
             } else false
         }
 
-    override suspend fun addEventTier(eventId: Int, tier: String) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun addEventTier(organizerId: Int, eventId: Int, tier: String): Int =
+        transaction(database){
+            EventTierTable.insertAndGetId {
+                it[EventTierTable.eventId] = eventId
+                it[EventTierTable.title] = tier
+                it[EventTierTable.organizerId] = organizerId
+            }.value
+        }
 
-    override suspend fun deleteEventTier(eventId: Int, tier: String) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteEventTier(organizerId: Int ,eventId: Int, tier: String): Int =
+        transaction(database){
+            EventTierTable.deleteWhere {
+                EventTierTable.eventId eq eventId and (EventTierTable.title eq tier) and (EventTierTable.organizerId eq organizerId)
+            }
+        }
 
-    override suspend fun getAllEventTiers(eventId: Int): List<String> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getAllEventTiers(organizerId: Int, eventId: Int): List<AttendeeTier> =
+        transaction(database){
+            EventTierTable
+                .selectAll()
+                .where { EventTierTable.eventId eq eventId and (EventTierTable.organizerId eq organizerId) }
+                .map { AttendeeTier(it[EventTierTable.title]) }
+        }
 }

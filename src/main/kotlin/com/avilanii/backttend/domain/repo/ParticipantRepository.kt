@@ -1,5 +1,6 @@
 package com.avilanii.backttend.domain.repo
 
+import com.avilanii.backttend.domain.models.AttendeeTier
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.domain.models.ParticipantStatus
@@ -14,7 +15,7 @@ interface ParticipantRepository {
     suspend fun checkParticipationEnrollment(userId: Int, eventId: Int): Boolean
     suspend fun checkParticipantEnrollmentByQr(eventId: Int, qrCode: String): Int?
     suspend fun checkInCheckOutParticipant(participantId: Int, interaction: ParticipantInteraction): Boolean
-    suspend fun addEventTier(eventId: Int, tier: String)
-    suspend fun deleteEventTier(eventId: Int, tier: String)
-    suspend fun getAllEventTiers(eventId: Int) : List<String>
+    suspend fun addEventTier(organizerId: Int ,eventId: Int, tier: String): Int
+    suspend fun deleteEventTier(organizerId: Int, eventId: Int, tier: String): Int
+    suspend fun getAllEventTiers(organizerId: Int, eventId: Int) : List<AttendeeTier>
 }

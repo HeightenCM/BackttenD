@@ -1,5 +1,6 @@
 package com.avilanii.backttend.presentation.routes
 
+import com.avilanii.backttend.domain.models.AttendeeTier
 import com.avilanii.backttend.domain.models.Event
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantRole
@@ -30,13 +31,6 @@ fun Route.eventsRoutes(
                 call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
             }
 
-            get("/{id}") {
-                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
-                val event = eventService.getEventById(userId, eventId, listOf(ParticipantRole.ORGANIZER)) ?: return@get call.respondText("Event not found or access denied", status = HttpStatusCode.NotFound)
-                call.respond(HttpStatusCode.OK, event)
-            }
-
             post<Event>{ event->
                 val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
                 val createdEventId = eventService.addEvent(event)
@@ -54,42 +48,76 @@ fun Route.eventsRoutes(
                 call.respond(HttpStatusCode.OK, createdEvent)
             }
 
-            get("/attending"){
-                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                val events = eventService.getAllEvents(userId, ParticipantRole.ATTENDEE)
-                call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
+            route("/{id}") {
+                get {
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                    val event = eventService.getEventById(userId, eventId, listOf(ParticipantRole.ORGANIZER)) ?: return@get call.respondText("Event not found or access denied", status = HttpStatusCode.NotFound)
+                    call.respond(HttpStatusCode.OK, event)
+                }
+
+                get("/tiers") {
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                    val tiers = participantService.getAllEventTiers(userId, eventId)
+                    call.respond(HttpStatusCode.OK, tiers)
+                }
+
+                post("/tiers") {
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                    val tier = call.receive<AttendeeTier>()
+                    participantService.addEventTier(userId, eventId, tier.title)
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                delete("/tiers") {
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                    val tier = call.receive<AttendeeTier>()
+                    participantService.removeEventTier(userId, eventId, tier.title)
+                    call.respond(HttpStatusCode.OK)
+                }
             }
 
-            post<String>("/attending"){ qrValue ->
-                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                val eventAttendingAdded = eventService.getEventByQr(qrValue)
-                if(eventAttendingAdded != null){
-                    if(!participantService.checkParticipantEnrollment(userId, eventAttendingAdded.id!!)) {
-                        userService.findById(userId)?.let { user ->
-                            participantService.addParticipant(
-                                Participant(
-                                    eventId = eventAttendingAdded.id,
-                                    userId = userId,
-                                    name = user.name,
-                                    email = user.email,
-                                    status = ParticipantStatus.ACCEPTED,
-                                    role = ParticipantRole.ATTENDEE,
-                                    qrCode = UUID.randomUUID().toString()
+            route("/attending") {
+                get {
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val events = eventService.getAllEvents(userId, ParticipantRole.ATTENDEE)
+                    call.respond(HttpStatusCode.OK, events.toEventsResponseDTO())
+                }
+
+                post<String> { qrValue ->
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val eventAttendingAdded = eventService.getEventByQr(qrValue)
+                    if(eventAttendingAdded != null){
+                        if(!participantService.checkParticipantEnrollment(userId, eventAttendingAdded.id!!)) {
+                            userService.findById(userId)?.let { user ->
+                                participantService.addParticipant(
+                                    Participant(
+                                        eventId = eventAttendingAdded.id,
+                                        userId = userId,
+                                        name = user.name,
+                                        email = user.email,
+                                        status = ParticipantStatus.ACCEPTED,
+                                        role = ParticipantRole.ATTENDEE,
+                                        qrCode = UUID.randomUUID().toString()
+                                    )
                                 )
-                            )
-                        }
-                        call.respond(HttpStatusCode.Created, eventAttendingAdded)
-                    } else call.respond(HttpStatusCode.BadRequest, "Already enrolled for event.")
-                } else call.respond(HttpStatusCode.NotFound, "No event found or QR expired." )
-            }
+                            }
+                            call.respond(HttpStatusCode.Created, eventAttendingAdded)
+                        } else call.respond(HttpStatusCode.BadRequest, "Already enrolled for event.")
+                    } else call.respond(HttpStatusCode.NotFound, "No event found or QR expired." )
+                }
 
-            post("/attending/{id}"){
-                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.BadRequest)
-                val isAccepted = call.receive<Boolean>()
-                val status = if (isAccepted) ParticipantStatus.ACCEPTED else ParticipantStatus.REJECTED
-                participantService.updateParticipantStatus(userId, eventId, status)
-                call.respond(HttpStatusCode.OK)
+                post("/{id}"){
+                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.BadRequest)
+                    val isAccepted = call.receive<Boolean>()
+                    val status = if (isAccepted) ParticipantStatus.ACCEPTED else ParticipantStatus.REJECTED
+                    participantService.updateParticipantStatus(userId, eventId, status)
+                    call.respond(HttpStatusCode.OK)
+                }
             }
         }
     }

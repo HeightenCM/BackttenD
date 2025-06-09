@@ -1,5 +1,6 @@
 package com.avilanii.backttend.services
 
+import com.avilanii.backttend.domain.models.AttendeeTier
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.domain.models.ParticipantStatus
@@ -50,5 +51,17 @@ class ParticipantService(
                 participantRepository
                     .checkInCheckOutParticipant(it, ParticipantInteraction.CHECK_OUT)
             } // null if non-existent participant
+    }
+
+    suspend fun getAllEventTiers(organizerId: Int, eventId: Int): List<AttendeeTier>{
+        return participantRepository.getAllEventTiers(organizerId, eventId)
+    }
+
+    suspend fun addEventTier(organizerId: Int, eventId: Int, eventTier: String): Int {
+        return participantRepository.addEventTier(organizerId, eventId, eventTier)
+    }
+
+    suspend fun removeEventTier(organizerId: Int, eventId: Int, eventTier: String): Int {
+        return participantRepository.deleteEventTier(organizerId, eventId, eventTier);
     }
 }
