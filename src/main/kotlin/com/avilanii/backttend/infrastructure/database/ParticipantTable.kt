@@ -5,7 +5,7 @@ import com.avilanii.backttend.domain.models.ParticipantStatus
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 
-object ParticipantTable: IntIdTable("participants") {
+object ParticipantTable: IntIdTable() {
     val eventId = reference("event_id", EventTable.id, onDelete = ReferenceOption.CASCADE)
     val userId = reference("user_id", UserTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
     val name = varchar("name", 255)
