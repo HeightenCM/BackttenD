@@ -1,5 +1,6 @@
 package com.avilanii.backttend.presentation.routes
 
+import com.avilanii.backttend.domain.models.AttendeeTier
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.infrastructure.datatransferobjects.CheckInConfirmationDTO
 import com.avilanii.backttend.infrastructure.datatransferobjects.toParticipantResponseDTO
@@ -7,6 +8,7 @@ import com.avilanii.backttend.services.ParticipantService
 import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.receive
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -64,6 +66,26 @@ fun Route.participantsRoutes(
                             "The participant hasn't checked in already!",
                             false))
                 } ?: call.respondText("Invalid QR Code!", status = HttpStatusCode.BadRequest)
+            }
+
+            route("/tiers") {
+                post<Pair<Participant, AttendeeTier>> { pair ->
+                    val userId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
+                    val participant = pair.first
+                    val attendeeTier = pair.second
+                    if(participantService.assignParticipantTier(userId, participant, attendeeTier)){
+                        call.respond(HttpStatusCode.OK)
+                    } else call.respond(HttpStatusCode.BadRequest)
+                }
+
+                delete {
+                    val userId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText("No id provided", status = HttpStatusCode.NotFound)
+                    val participant = call.receive<Participant>()
+                    if(participantService.removeParticipantTier(userId, participant) == 1)
+                        call.respondText("Success", status = HttpStatusCode.OK)
+                    else
+                        call.respondText("Participant not found!", status = HttpStatusCode.NotFound)
+                }
             }
         }
     }

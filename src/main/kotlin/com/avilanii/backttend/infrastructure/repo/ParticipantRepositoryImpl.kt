@@ -6,7 +6,6 @@ import com.avilanii.backttend.domain.models.ParticipantInteraction
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.domain.repo.ParticipantRepository
 import com.avilanii.backttend.infrastructure.database.EventTierTable
-import com.avilanii.backttend.infrastructure.database.EventTierTable.organizerId
 import com.avilanii.backttend.infrastructure.database.ParticipantInteractionTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
 import org.jetbrains.exposed.sql.Database
@@ -33,7 +32,17 @@ class ParticipantRepositoryImpl(
                     email = it[ParticipantTable.email],
                     status = it[ParticipantTable.status],
                     role = it[ParticipantTable.role],
-                    qrCode = ""
+                    qrCode = "",
+                    tier = run {
+                        val title = EventTierTable
+                            .selectAll()
+                            .where { EventTierTable.id eq (it[ParticipantTable.tierId]?.value) }
+                            .map { it[EventTierTable.title] }
+                            .singleOrNull()
+                        AttendeeTier(
+                            title = title ?: "No tier"
+                        )
+                    }
                 )
             }
         }
@@ -203,5 +212,32 @@ class ParticipantRepositoryImpl(
                 .selectAll()
                 .where { EventTierTable.eventId eq eventId and (EventTierTable.organizerId eq organizerId) }
                 .map { AttendeeTier(it[EventTierTable.title]) }
+        }
+
+    override suspend fun assignParticipantTier(
+        organizerId: Int,
+        participant: Participant,
+        attendeeTier: AttendeeTier
+    ) = transaction(database) {
+            val tierId = EventTierTable
+                .select(EventTierTable.id)
+                .where{ EventTierTable.organizerId eq organizerId and (EventTierTable.title eq attendeeTier.title) }
+                .map { it[EventTierTable.id].value }
+                .singleOrNull()
+            if (tierId != null) {
+                ParticipantTable.update({ ParticipantTable.email eq participant.email and (ParticipantTable.name eq participant.name) }) {
+                    it[ParticipantTable.tierId] = tierId
+                }
+                true
+            } else false
+        }
+
+    override suspend fun removeParticipantTier(
+        organizerId: Int,
+        participant: Participant
+    ) = transaction(database){
+        ParticipantTable.update({ ParticipantTable.email eq participant.email and (ParticipantTable.name eq participant.name) }) {
+            it[ParticipantTable.tierId] = null
+        }
         }
 }

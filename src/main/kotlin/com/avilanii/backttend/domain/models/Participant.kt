@@ -11,6 +11,7 @@ data class Participant(
     val status: ParticipantStatus = ParticipantStatus.PENDING,
     val role: ParticipantRole = ParticipantRole.ATTENDEE,
     val qrCode: String = "",
+    val tier: AttendeeTier? = null,
 )
 
 @Serializable

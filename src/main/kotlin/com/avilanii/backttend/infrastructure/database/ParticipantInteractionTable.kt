@@ -5,7 +5,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 
 object ParticipantInteractionTable : IntIdTable() {
-    val participantId = reference("participant_id", ParticipantTable, onDelete = ReferenceOption.CASCADE)
+    val participantId = reference("participant_id", ParticipantTable.id, onDelete = ReferenceOption.CASCADE)
     val interaction = enumeration("interaction", ParticipantInteraction::class)
     val date = text("date")
 }

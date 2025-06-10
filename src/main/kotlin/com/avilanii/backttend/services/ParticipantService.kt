@@ -64,4 +64,12 @@ class ParticipantService(
     suspend fun removeEventTier(organizerId: Int, eventId: Int, eventTier: String): Int {
         return participantRepository.deleteEventTier(organizerId, eventId, eventTier);
     }
+
+    suspend fun assignParticipantTier(organizerId: Int, participant: Participant, attendeeTier: AttendeeTier): Boolean{
+        return participantRepository.assignParticipantTier(organizerId, participant, attendeeTier)
+    }
+
+    suspend fun removeParticipantTier(organizerId: Int, participant: Participant): Int{
+        return participantRepository.removeParticipantTier(organizerId, participant)
+    }
 }

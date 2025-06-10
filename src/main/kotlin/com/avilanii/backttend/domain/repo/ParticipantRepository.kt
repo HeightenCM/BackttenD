@@ -18,4 +18,6 @@ interface ParticipantRepository {
     suspend fun addEventTier(organizerId: Int ,eventId: Int, tier: String): Int
     suspend fun deleteEventTier(organizerId: Int, eventId: Int, tier: String): Int
     suspend fun getAllEventTiers(organizerId: Int, eventId: Int) : List<AttendeeTier>
+    suspend fun assignParticipantTier(organizerId: Int, participant: Participant, attendeeTier: AttendeeTier): Boolean
+    suspend fun removeParticipantTier(organizerId: Int, participant: Participant): Int
 }
