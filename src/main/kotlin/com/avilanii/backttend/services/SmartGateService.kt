@@ -14,9 +14,9 @@ class SmartGateService(
         return smartGateRepository.addSmartGate(eventId, name)
     }
     suspend fun addSmartGateTier(eventId: Int, name: String, attendeeTier: AttendeeTier): Int{
-        return addSmartGateTier(eventId, name, attendeeTier)
+        return smartGateRepository.addSmartGateTier(eventId, name, attendeeTier)
     }
     suspend fun removeSmartGateTier(eventId: Int, name: String, attendeeTier: AttendeeTier): Int{
-        return removeSmartGateTier(eventId, name, attendeeTier)
+        return smartGateRepository.removeSmartGateTier(eventId, name, attendeeTier)
     }
 }
