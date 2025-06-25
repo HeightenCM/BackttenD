@@ -106,11 +106,10 @@ class ParticipantRepositoryImpl(
 
     override suspend fun updateParticipantStatus(userId: Int, eventId: Int, status: ParticipantStatus) =
         transaction(database) {
-            val participantId = ParticipantTable.select(
-                ParticipantTable.id
-            ).where{
-                ParticipantTable.userId eq userId and (ParticipantTable.eventId eq eventId)
-            }.map { it[ParticipantTable.userId]!!.value }.single()
+            val participantId = ParticipantTable
+                .selectAll()
+                .where{ ParticipantTable.userId eq userId and (ParticipantTable.eventId eq eventId)
+                }.map { it[ParticipantTable.userId]!!.value }.single()
             ParticipantTable.update(
                 where = {ParticipantTable.id eq participantId} ) {
                 it[ParticipantTable.status] = status

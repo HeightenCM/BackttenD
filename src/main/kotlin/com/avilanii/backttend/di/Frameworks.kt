@@ -3,10 +3,12 @@ package com.avilanii.backttend.di
 import com.avilanii.backttend.infrastructure.repo.EventRepositoryImpl
 import com.avilanii.backttend.infrastructure.repo.ParticipantRepositoryImpl
 import com.avilanii.backttend.infrastructure.repo.QrCodeRepositoryImpl
+import com.avilanii.backttend.infrastructure.repo.SmartGateRepositoryImpl
 import com.avilanii.backttend.infrastructure.repo.UserRepositoryImpl
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
 import com.avilanii.backttend.services.QrCodeService
+import com.avilanii.backttend.services.SmartGateService
 import com.avilanii.backttend.services.UserService
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
@@ -44,6 +46,12 @@ fun Application.configureFrameworks() {
             }
             single {
                 QrCodeService(get())
+            }
+            single {
+                SmartGateRepositoryImpl(get())
+            }
+            single {
+                SmartGateService(get())
             }
         })
     }

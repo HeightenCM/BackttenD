@@ -17,6 +17,8 @@ fun Application.configureDatabase() {
             create(ParticipantInteractionTable)
             create(QrCodeTable)
             create(UserTable)
+            create(SmartGateTable)
+            create(TierGatePermissionTable)
         }
     }
 }

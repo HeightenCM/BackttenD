@@ -1,5 +1,6 @@
 package com.avilanii.backttend.presentation.routes
 
+import com.avilanii.backttend.infrastructure.datatransferobjects.UserAccountDetailsResponseDTO
 import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -16,6 +17,12 @@ fun Route.usersRoutes(
                 val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
                 val requesterId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
 
+            }
+            get {
+                val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                val user = userService.findById(userId) ?: return@get call.respondText("User not found", status = HttpStatusCode.NotFound)
+                val userInfo = UserAccountDetailsResponseDTO(user.name, user.email)
+                call.respond(message = userInfo, status = HttpStatusCode.OK)
             }
         }
     }

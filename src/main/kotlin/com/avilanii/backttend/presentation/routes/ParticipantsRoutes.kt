@@ -71,6 +71,7 @@ fun Route.participantsRoutes(
             route("/tiers") {
                 post<Pair<Participant, AttendeeTier>> { pair ->
                     val userId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
+                    // ??? above might be wrong.. idk
                     val participant = pair.first
                     val attendeeTier = pair.second
                     if(participantService.assignParticipantTier(userId, participant, attendeeTier)){
@@ -86,6 +87,11 @@ fun Route.participantsRoutes(
                     else
                         call.respondText("Participant not found!", status = HttpStatusCode.NotFound)
                 }
+            }
+
+            post("/nfc"){
+                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.NotFound)
+                
             }
         }
     }
