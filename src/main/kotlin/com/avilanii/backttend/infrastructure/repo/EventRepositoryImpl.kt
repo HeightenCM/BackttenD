@@ -25,7 +25,7 @@ class EventRepositoryImpl(
                     Event(
                         id = it[EventTable.id].value,
                         name = it[EventTable.name],
-                        budget = it[EventTable.budget],
+                        venue = it[EventTable.venue],
                         dateTime = it[EventTable.dateTime],
                         isPending = if(participantRole == ParticipantRole.ATTENDEE){
                             it[ParticipantTable.status] == ParticipantStatus.PENDING
@@ -52,7 +52,7 @@ class EventRepositoryImpl(
                     Event(
                         id = result[EventTable.id].value,
                         name = result[EventTable.name],
-                        budget = result[EventTable.budget],
+                        venue = result[EventTable.venue],
                         dateTime = result[EventTable.dateTime]
                     )
                 }.singleOrNull()
@@ -62,7 +62,7 @@ class EventRepositoryImpl(
         transaction (database){
             EventTable.insertAndGetId {
                 it[EventTable.name] = event.name
-                it[EventTable.budget] = event.budget
+                it[EventTable.venue] = event.venue
                 it[EventTable.dateTime] = event.dateTime
                 it[EventTable.qrcode] = UUID.randomUUID().toString()
                 it[EventTable.qrexpirationdate] = LocalDateTime.now().plusMinutes(5).toString()
@@ -103,7 +103,7 @@ class EventRepositoryImpl(
                         Event(
                             id = it[EventTable.id].value,
                             name = it[EventTable.name],
-                            budget = it[EventTable.budget],
+                            venue = it[EventTable.venue],
                             dateTime = it[EventTable.dateTime],
                             isPending = false,
                             organizer = ParticipantTable

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class Event(
     val id: Int? = null,
     val name: String,
-    val budget: Int,
+    val venue: String,
     val dateTime: String,
     val isPending: Boolean? = null,
     val organizer: String? = null,
