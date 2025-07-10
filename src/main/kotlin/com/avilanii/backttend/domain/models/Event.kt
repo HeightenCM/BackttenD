@@ -7,7 +7,8 @@ data class Event(
     val id: Int? = null,
     val name: String,
     val venue: String,
-    val dateTime: String,
+    val startDateTime: String,
+    val endDateTime: String,
     val isPending: Boolean? = null,
     val organizer: String? = null,
 )

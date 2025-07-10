@@ -26,7 +26,8 @@ class EventRepositoryImpl(
                         id = it[EventTable.id].value,
                         name = it[EventTable.name],
                         venue = it[EventTable.venue],
-                        dateTime = it[EventTable.dateTime],
+                        startDateTime = it[EventTable.startDateTime],
+                        endDateTime = it[EventTable.endDateTime],
                         isPending = if(participantRole == ParticipantRole.ATTENDEE){
                             it[ParticipantTable.status] == ParticipantStatus.PENDING
                         }
@@ -53,7 +54,8 @@ class EventRepositoryImpl(
                         id = result[EventTable.id].value,
                         name = result[EventTable.name],
                         venue = result[EventTable.venue],
-                        dateTime = result[EventTable.dateTime]
+                        startDateTime = result[EventTable.startDateTime],
+                        endDateTime = result[EventTable.endDateTime],
                     )
                 }.singleOrNull()
         }
@@ -63,7 +65,8 @@ class EventRepositoryImpl(
             EventTable.insertAndGetId {
                 it[EventTable.name] = event.name
                 it[EventTable.venue] = event.venue
-                it[EventTable.dateTime] = event.dateTime
+                it[EventTable.startDateTime] = event.startDateTime
+                it[EventTable.endDateTime] = event.endDateTime
                 it[EventTable.qrcode] = UUID.randomUUID().toString()
                 it[EventTable.qrexpirationdate] = LocalDateTime.now().plusMinutes(5).toString()
             }.value
@@ -104,7 +107,8 @@ class EventRepositoryImpl(
                             id = it[EventTable.id].value,
                             name = it[EventTable.name],
                             venue = it[EventTable.venue],
-                            dateTime = it[EventTable.dateTime],
+                            startDateTime = it[EventTable.startDateTime],
+                            endDateTime = it[EventTable.endDateTime],
                             isPending = false,
                             organizer = ParticipantTable
                                 .select(ParticipantTable.name)
