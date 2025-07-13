@@ -210,7 +210,7 @@ class ParticipantRepositoryImpl(
             EventTierTable
                 .selectAll()
                 .where { EventTierTable.eventId eq eventId and (EventTierTable.organizerId eq organizerId) }
-                .map { AttendeeTier(it[EventTierTable.title]) }
+                .map { AttendeeTier(title = it[EventTierTable.title]) }
         }
 
     override suspend fun assignParticipantTier(

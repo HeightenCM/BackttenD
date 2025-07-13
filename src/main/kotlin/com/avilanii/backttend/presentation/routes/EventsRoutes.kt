@@ -8,11 +8,13 @@ import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.infrastructure.datatransferobjects.toEventsResponseDTO
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
+import com.avilanii.backttend.services.SmartGateService
 import com.avilanii.backttend.services.UserService
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.receive
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.util.UUID
@@ -20,7 +22,8 @@ import java.util.UUID
 fun Route.eventsRoutes(
     eventService: EventService,
     participantService: ParticipantService,
-    userService: UserService
+    userService: UserService,
+    smartGateService: SmartGateService
 ) {
     authenticate("auth-jwt"){
         route("/events") {
@@ -77,6 +80,42 @@ fun Route.eventsRoutes(
                     val tier = call.receive<AttendeeTier>()
                     participantService.removeEventTier(userId, eventId, tier.title)
                     call.respond(HttpStatusCode.OK)
+                }
+
+                route("/smartGates") {
+                    get{
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val smartGates = smartGateService.getSmartGates(eventId)
+                        call.respond(message = smartGates,  status = HttpStatusCode.OK)
+                    }
+                    post {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val name = call.receiveText()
+                        val smartGate = smartGateService.addSmartGate(eventId, name)
+                        call.respond(message = smartGate, status = HttpStatusCode.OK)
+                    }
+                    route("/{gateId}"){
+                        get("/activate"){
+                            val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                            val gateId = call.parameters["gateId"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                            val uniqueIdentifier = smartGateService.activateSmartGate(eventId, gateId)
+                            call.respond( message = uniqueIdentifier, status = HttpStatusCode.OK)
+                        }
+                        route("/tiers") {
+                            get{
+                                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                                val gateId = call.parameters["gateId"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                                val tiers = smartGateService.getGateTiers(eventId, gateId)
+                                call.respond(message = tiers, status = HttpStatusCode.OK)
+                            }
+                            put("{tierId}") {
+                                val gateId = call.parameters["gateId"]?.toIntOrNull() ?: return@put call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                                val tierId = call.parameters["tierId"]?.toIntOrNull() ?: return@put call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                                smartGateService.changeGateTierState(gateId, tierId)
+                                call.respond(HttpStatusCode.OK)
+                            }
+                        }
+                    }
                 }
             }
 

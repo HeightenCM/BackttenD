@@ -7,4 +7,5 @@ object TierGatePermissionTable: IntIdTable() {
     val gateId = reference("gate_id", SmartGateTable.id, onDelete = ReferenceOption.CASCADE)
     val tierId = reference("tier_id", EventTierTable.id, onDelete = ReferenceOption.CASCADE)
     val count = integer("count")
+    val isAllowed = bool("isAllowed")
 }

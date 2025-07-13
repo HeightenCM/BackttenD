@@ -18,7 +18,7 @@ fun Application.configureRouting() {
     routing {
         authRoutes(userService, participantService)
         usersRoutes(userService)
-        eventsRoutes(eventService, participantService, userService)
+        eventsRoutes(eventService, participantService, userService, smartGateService)
         participantsRoutes(participantService, userService)
         qrCodeRoutes(qrService)
         smartGateRoutes(smartGateService)
