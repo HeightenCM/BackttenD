@@ -1,6 +1,5 @@
 package com.avilanii.backttend.presentation.routes
 
-import com.avilanii.backttend.domain.models.AttendeeTier
 import com.avilanii.backttend.domain.models.Event
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantRole
@@ -46,7 +45,7 @@ fun Route.eventsRoutes(
                     email = user.email,
                     status = ParticipantStatus.ACCEPTED,
                     role = ParticipantRole.ORGANIZER,
-                    qrCode = "ORGANIZER"
+                    qrCode = UUID.randomUUID().toString()
                 ))
                 call.respond(HttpStatusCode.OK, createdEvent)
             }
@@ -58,29 +57,28 @@ fun Route.eventsRoutes(
                     val event = eventService.getEventById(userId, eventId, listOf(ParticipantRole.ORGANIZER)) ?: return@get call.respondText("Event not found or access denied", status = HttpStatusCode.NotFound)
                     call.respond(HttpStatusCode.OK, event)
                 }
+                route("/tiers"){
+                    get {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val tiers = participantService.getAllEventTiers(eventId)
+                        call.respond(HttpStatusCode.OK, tiers)
+                    }
 
-                get("/tiers") {
-                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
-                    val tiers = participantService.getAllEventTiers(userId, eventId)
-                    call.respond(HttpStatusCode.OK, tiers)
+                    post {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val tier = call.receiveText()
+                        val tierId = participantService.addEventTier(eventId, tier)
+                        call.respond(message = tierId, status = HttpStatusCode.OK)
+                    }
+
+                    delete("/{tierId}") {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val tierId = call.parameters["tierId"]?.toIntOrNull() ?: return@delete call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        participantService.removeEventTier(eventId, tierId)
+                        call.respond(HttpStatusCode.OK)
+                    }
                 }
 
-                post("/tiers") {
-                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
-                    val tier = call.receive<AttendeeTier>()
-                    participantService.addEventTier(userId, eventId, tier.title)
-                    call.respond(HttpStatusCode.OK)
-                }
-
-                delete("/tiers") {
-                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
-                    val tier = call.receive<AttendeeTier>()
-                    participantService.removeEventTier(userId, eventId, tier.title)
-                    call.respond(HttpStatusCode.OK)
-                }
 
                 route("/smartGates") {
                     get{
@@ -108,7 +106,7 @@ fun Route.eventsRoutes(
                                 val tiers = smartGateService.getGateTiers(eventId, gateId)
                                 call.respond(message = tiers, status = HttpStatusCode.OK)
                             }
-                            put("{tierId}") {
+                            put("/{tierId}") {
                                 val gateId = call.parameters["gateId"]?.toIntOrNull() ?: return@put call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
                                 val tierId = call.parameters["tierId"]?.toIntOrNull() ?: return@put call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
                                 smartGateService.changeGateTierState(gateId, tierId)

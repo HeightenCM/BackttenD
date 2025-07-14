@@ -15,9 +15,9 @@ interface ParticipantRepository {
     suspend fun checkParticipationEnrollment(userId: Int, eventId: Int): Boolean
     suspend fun checkParticipantEnrollmentByQr(eventId: Int, qrCode: String): Int?
     suspend fun checkInCheckOutParticipant(participantId: Int, interaction: ParticipantInteraction): Boolean
-    suspend fun addEventTier(organizerId: Int ,eventId: Int, tier: String): Int
-    suspend fun deleteEventTier(organizerId: Int, eventId: Int, tier: String): Int
-    suspend fun getAllEventTiers(organizerId: Int, eventId: Int) : List<AttendeeTier>
-    suspend fun assignParticipantTier(organizerId: Int, participant: Participant, attendeeTier: AttendeeTier): Boolean
-    suspend fun removeParticipantTier(organizerId: Int, participant: Participant): Int
+    suspend fun addEventTier(eventId: Int, tier: String): Int
+    suspend fun deleteEventTier(eventId: Int, tierId: Int)
+    suspend fun getAllEventTiers(eventId: Int) : List<AttendeeTier>
+    suspend fun assignParticipantTier(eventId: Int, participantId: Int, tierId: Int): String
+    suspend fun removeParticipantTier(eventId: Int, participantId: Int): Int
 }

@@ -8,6 +8,8 @@ import com.avilanii.backttend.domain.repo.ParticipantRepository
 import com.avilanii.backttend.infrastructure.database.EventTierTable
 import com.avilanii.backttend.infrastructure.database.ParticipantInteractionTable
 import com.avilanii.backttend.infrastructure.database.ParticipantTable
+import com.avilanii.backttend.infrastructure.database.SmartGateTable
+import com.avilanii.backttend.infrastructure.database.TierGatePermissionTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
@@ -26,6 +28,7 @@ class ParticipantRepositoryImpl(
         transaction(database) {
             ParticipantTable.selectAll().where(ParticipantTable.eventId.eq(eventId)).map {
                 Participant(
+                    id = it[ParticipantTable.id].value,
                     eventId = it[ParticipantTable.eventId].value,
                     userId = it[ParticipantTable.id].value,
                     name = it[ParticipantTable.name],
@@ -34,14 +37,16 @@ class ParticipantRepositoryImpl(
                     role = it[ParticipantTable.role],
                     qrCode = "",
                     tier = run {
-                        val title = EventTierTable
+                        EventTierTable
                             .selectAll()
                             .where { EventTierTable.id eq (it[ParticipantTable.tierId]?.value) }
-                            .map { it[EventTierTable.title] }
+                            .map {
+                                AttendeeTier(
+                                    id = it[EventTierTable.eventId].value,
+                                    title = it[EventTierTable.title],
+                                )
+                            }
                             .singleOrNull()
-                        AttendeeTier(
-                            title = title ?: "No tier"
-                        )
                     }
                 )
             }
@@ -73,6 +78,7 @@ class ParticipantRepositoryImpl(
                     status = result[ParticipantTable.status],
                     role = result[ParticipantTable.role],
                     qrCode = result[ParticipantTable.qrCode],
+                    id = id
                 )
             }.singleOrNull()
         }
@@ -189,54 +195,67 @@ class ParticipantRepositoryImpl(
             } else false
         }
 
-    override suspend fun addEventTier(organizerId: Int, eventId: Int, tier: String): Int =
+    override suspend fun addEventTier(eventId: Int, tier: String): Int =
         transaction(database){
-            EventTierTable.insertAndGetId {
+            val tierId = EventTierTable.insertAndGetId {
                 it[EventTierTable.eventId] = eventId
                 it[EventTierTable.title] = tier
-                it[EventTierTable.organizerId] = organizerId
             }.value
+            val gates = SmartGateTable
+                .selectAll()
+                .where { SmartGateTable.eventId eq eventId }
+                .map { it[SmartGateTable.id].value }
+            gates.forEach { gateId ->
+                TierGatePermissionTable
+                    .insert{
+                        it[TierGatePermissionTable.tierId] = tierId
+                        it[TierGatePermissionTable.gateId] = gateId
+                        it[TierGatePermissionTable.isAllowed] = false
+                        it[TierGatePermissionTable.count] = 0
+                    }
+            }
+            tierId
         }
 
-    override suspend fun deleteEventTier(organizerId: Int ,eventId: Int, tier: String): Int =
+    override suspend fun deleteEventTier(eventId: Int, tierId: Int) =
         transaction(database){
             EventTierTable.deleteWhere {
-                EventTierTable.eventId eq eventId and (EventTierTable.title eq tier) and (EventTierTable.organizerId eq organizerId)
+                EventTierTable.eventId eq eventId and (EventTierTable.id eq tierId)
             }
+            Unit
         }
 
-    override suspend fun getAllEventTiers(organizerId: Int, eventId: Int): List<AttendeeTier> =
+    override suspend fun getAllEventTiers(eventId: Int): List<AttendeeTier> =
         transaction(database){
             EventTierTable
                 .selectAll()
-                .where { EventTierTable.eventId eq eventId and (EventTierTable.organizerId eq organizerId) }
-                .map { AttendeeTier(title = it[EventTierTable.title]) }
+                .where { EventTierTable.eventId eq eventId }
+                .map { AttendeeTier(
+                    title = it[EventTierTable.title],
+                    id = it[EventTierTable.id].value
+                ) }
         }
 
     override suspend fun assignParticipantTier(
-        organizerId: Int,
-        participant: Participant,
-        attendeeTier: AttendeeTier
-    ) = transaction(database) {
-            val tierId = EventTierTable
-                .select(EventTierTable.id)
-                .where{ EventTierTable.organizerId eq organizerId and (EventTierTable.title eq attendeeTier.title) }
-                .map { it[EventTierTable.id].value }
-                .singleOrNull()
-            if (tierId != null) {
-                ParticipantTable.update({ ParticipantTable.email eq participant.email and (ParticipantTable.name eq participant.name) }) {
-                    it[ParticipantTable.tierId] = tierId
-                }
-                true
-            } else false
+        eventId: Int,
+        participantId: Int,
+        tierId: Int
+    ): String = transaction(database) {
+        ParticipantTable.update({ ParticipantTable.id eq participantId and (ParticipantTable.eventId eq eventId) }) {
+            it[ParticipantTable.tierId] = tierId
         }
-
+        EventTierTable
+            .selectAll()
+            .where { EventTierTable.id eq tierId }
+            .map { it[EventTierTable.title] }
+            .single()
+    }
     override suspend fun removeParticipantTier(
-        organizerId: Int,
-        participant: Participant
+        eventId: Int,
+        participantId: Int
     ) = transaction(database){
-        ParticipantTable.update({ ParticipantTable.email eq participant.email and (ParticipantTable.name eq participant.name) }) {
+        ParticipantTable.update({ ParticipantTable.id eq participantId and (ParticipantTable.eventId eq eventId) }) {
             it[ParticipantTable.tierId] = null
         }
-        }
+    }
 }

@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Participant(
+    val id: Int? = null,
     val eventId: Int,
     val userId: Int? = null,
     val name: String,

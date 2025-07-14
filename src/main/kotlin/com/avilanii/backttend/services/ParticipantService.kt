@@ -53,23 +53,23 @@ class ParticipantService(
             } // null if non-existent participant
     }
 
-    suspend fun getAllEventTiers(organizerId: Int, eventId: Int): List<AttendeeTier>{
-        return participantRepository.getAllEventTiers(organizerId, eventId)
+    suspend fun getAllEventTiers(eventId: Int): List<AttendeeTier>{
+        return participantRepository.getAllEventTiers(eventId)
     }
 
-    suspend fun addEventTier(organizerId: Int, eventId: Int, eventTier: String): Int {
-        return participantRepository.addEventTier(organizerId, eventId, eventTier)
+    suspend fun addEventTier(eventId: Int, eventTier: String): Int {
+        return participantRepository.addEventTier(eventId, eventTier)
     }
 
-    suspend fun removeEventTier(organizerId: Int, eventId: Int, eventTier: String): Int {
-        return participantRepository.deleteEventTier(organizerId, eventId, eventTier);
+    suspend fun removeEventTier(eventId: Int, tierId: Int) {
+        return participantRepository.deleteEventTier(eventId, tierId)
     }
 
-    suspend fun assignParticipantTier(organizerId: Int, participant: Participant, attendeeTier: AttendeeTier): Boolean{
-        return participantRepository.assignParticipantTier(organizerId, participant, attendeeTier)
+    suspend fun assignParticipantTier(eventId: Int, participantId: Int, tierId: Int): String{
+        return participantRepository.assignParticipantTier(eventId, participantId, tierId)
     }
 
-    suspend fun removeParticipantTier(organizerId: Int, participant: Participant): Int{
-        return participantRepository.removeParticipantTier(organizerId, participant)
+    suspend fun removeParticipantTier(eventId: Int, participantId: Int): Int{
+        return participantRepository.removeParticipantTier(eventId, participantId)
     }
 }
