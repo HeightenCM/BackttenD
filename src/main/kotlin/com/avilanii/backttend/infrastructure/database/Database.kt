@@ -19,6 +19,7 @@ fun Application.configureDatabase() {
             create(UserTable)
             create(SmartGateTable)
             create(TierGatePermissionTable)
+            create(EventAnnouncementTable)
         }
     }
 }
