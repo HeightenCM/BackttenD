@@ -1,10 +1,10 @@
 package com.avilanii.backttend.services
 
 import com.avilanii.backttend.domain.models.Announcement
-import com.avilanii.backttend.domain.repo.AnnouncementRepository
+import com.avilanii.backttend.infrastructure.repo.EventAnnouncementRepositoryImpl
 
 class AnnouncementService(
-    private val announcementRepository: AnnouncementRepository
+    private val announcementRepository: EventAnnouncementRepositoryImpl
 ) {
     suspend fun getAnnouncements(eventId: Int): List<Announcement>{
         return announcementRepository.getAnnouncements(eventId)
