@@ -32,6 +32,25 @@ fun Route.participantsRoutes(
                 call.respond(HttpStatusCode.OK, addedParticipant)
             }
 
+            post<List<Pair<String, String>>>("/csv") { participants ->
+                val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest)
+                val response = participants.map { participant ->
+                    val userId = userService.findByEmail(participant.second)?.id
+                    val participantId = participantService.addParticipant(
+                        Participant(
+                            id = -1,
+                            name = participant.first,
+                            email = participant.second,
+                            eventId = eventId,
+                            userId = userId,
+                            qrCode = UUID.randomUUID().toString()
+                        )
+                    )
+                    participantService.getParticipantById(participantId) ?: return@post call.respondText("Participant not created", status = HttpStatusCode.BadRequest)
+                }
+                call.respond(HttpStatusCode.OK, response)
+            }
+
             get("/checkin"){
                 val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("No id provided", status = HttpStatusCode.NotFound)
                 val scannedQr = call.receiveText()
