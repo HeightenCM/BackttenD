@@ -1,10 +1,12 @@
 package com.avilanii.backttend.presentation.routes
 
+import com.avilanii.backttend.domain.models.Announcement
 import com.avilanii.backttend.domain.models.Event
 import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantRole
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.infrastructure.datatransferobjects.toEventsResponseDTO
+import com.avilanii.backttend.services.AnnouncementService
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
 import com.avilanii.backttend.services.SmartGateService
@@ -22,7 +24,8 @@ fun Route.eventsRoutes(
     eventService: EventService,
     participantService: ParticipantService,
     userService: UserService,
-    smartGateService: SmartGateService
+    smartGateService: SmartGateService,
+    announcementService: AnnouncementService
 ) {
     authenticate("auth-jwt"){
         route("/events") {
@@ -115,6 +118,20 @@ fun Route.eventsRoutes(
                         }
                     }
                 }
+
+                route("/announcements") {
+                    get {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+                        val announcements = announcementService.getAnnouncements(eventId)
+                        call.respond(message = announcements, status = HttpStatusCode.OK)
+                    }
+                    post {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest)
+                        val announcement = call.receive<Announcement>()
+                        val announcementPosted = announcementService.postAnnouncement(eventId, announcement.title, announcement.description)
+                        call.respond(message = announcementPosted, status = HttpStatusCode.OK)
+                    }
+                }
             }
 
             route("/attending") {
@@ -147,13 +164,20 @@ fun Route.eventsRoutes(
                     } else call.respond(HttpStatusCode.NotFound, "No event found or QR expired." )
                 }
 
-                post("/{id}"){
-                    val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
-                    val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.BadRequest)
-                    val isAccepted = call.receive<Boolean>()
-                    val status = if (isAccepted) ParticipantStatus.ACCEPTED else ParticipantStatus.REJECTED
-                    participantService.updateParticipantStatus(userId, eventId, status)
-                    call.respond(HttpStatusCode.OK)
+                route("/{id}"){
+                    post{
+                        val userId = call.principal<JWTPrincipal>()?.payload?.subject!!.toInt()
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@post call.respondText("No id provided", status = HttpStatusCode.BadRequest)
+                        val isAccepted = call.receive<Boolean>()
+                        val status = if (isAccepted) ParticipantStatus.ACCEPTED else ParticipantStatus.REJECTED
+                        participantService.updateParticipantStatus(userId, eventId, status)
+                        call.respond(HttpStatusCode.OK)
+                    }
+                    get("/announcements") {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+                        val announcements = announcementService.getAnnouncements(eventId)
+                        call.respond(message = announcements, status = HttpStatusCode.OK)
+                    }
                 }
             }
         }

@@ -1,0 +1,15 @@
+package com.avilanii.backttend.services
+
+import com.avilanii.backttend.domain.models.Announcement
+import com.avilanii.backttend.domain.repo.AnnouncementRepository
+
+class AnnouncementService(
+    private val announcementRepository: AnnouncementRepository
+) {
+    suspend fun getAnnouncements(eventId: Int): List<Announcement>{
+        return announcementRepository.getAnnouncements(eventId)
+    }
+    suspend fun postAnnouncement(eventId: Int, title: String, description: String): Announcement{
+        return announcementRepository.postAnnouncement(eventId, title, description)
+    }
+}
