@@ -6,6 +6,7 @@ import com.avilanii.backttend.domain.models.Participant
 import com.avilanii.backttend.domain.models.ParticipantRole
 import com.avilanii.backttend.domain.models.ParticipantStatus
 import com.avilanii.backttend.infrastructure.datatransferobjects.toEventsResponseDTO
+import com.avilanii.backttend.services.AnalyticsService
 import com.avilanii.backttend.services.AnnouncementService
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
@@ -25,7 +26,8 @@ fun Route.eventsRoutes(
     participantService: ParticipantService,
     userService: UserService,
     smartGateService: SmartGateService,
-    announcementService: AnnouncementService
+    announcementService: AnnouncementService,
+    analyticsService: AnalyticsService
 ) {
     authenticate("auth-jwt"){
         route("/events") {
@@ -116,6 +118,19 @@ fun Route.eventsRoutes(
                                 call.respond(HttpStatusCode.OK)
                             }
                         }
+                    }
+                }
+
+                route("/analytics"){
+                    get("tierPie") {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val tierDistribution = analyticsService.getTierPie(eventId)
+                        call.respond(message = tierDistribution, status = HttpStatusCode.OK)
+                    }
+                    get("statusPie") {
+                        val eventId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText("Invalid id", status = HttpStatusCode.BadRequest)
+                        val tierDistribution = analyticsService.getStatusPie(eventId)
+                        call.respond(message = tierDistribution, status = HttpStatusCode.OK)
                     }
                 }
 

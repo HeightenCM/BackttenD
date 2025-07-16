@@ -1,5 +1,6 @@
 package com.avilanii.backttend.presentation.routes
 
+import com.avilanii.backttend.services.AnalyticsService
 import com.avilanii.backttend.services.AnnouncementService
 import com.avilanii.backttend.services.EventService
 import com.avilanii.backttend.services.ParticipantService
@@ -17,10 +18,11 @@ fun Application.configureRouting() {
     val qrService by inject<QrCodeService>()
     val smartGateService by inject<SmartGateService>()
     val announcementService by inject<AnnouncementService>()
+    val analyticsService by inject<AnalyticsService>()
     routing {
         authRoutes(userService, participantService)
         usersRoutes(userService)
-        eventsRoutes(eventService, participantService, userService, smartGateService, announcementService)
+        eventsRoutes(eventService, participantService, userService, smartGateService, announcementService, analyticsService)
         participantsRoutes(participantService, userService)
         qrCodeRoutes(qrService)
         smartGateRoutes(smartGateService)
